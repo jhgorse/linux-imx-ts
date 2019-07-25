@@ -322,6 +322,17 @@ config BATTERY_MAX17042
 	  with MAX17042. This driver also supports max17047/50 chips which are
 	  improved version of max17042.
 
+config BATTERY_MAX17055
+	tristate "Maxim MAX17055 Fuel Gauge"
+	depends on I2C
+	help
+	  MAX17055 is a low 7μA operating current fuel gauge which implements
+	  Maxim ModelGauge™ m5 EZ algorithm. ModelGauge m5 EZ makes fuel gauge
+	  implementation easy by eliminating battery characterization
+	  requirements and simplifying host software interaction.
+	  The ModelGauge m5 EZ robust algorithm provides tolerance against
+	  battery diversity for most lithium batteries and applications.
+
 config BATTERY_MAX1721X
 	tristate "MAX17211/MAX17215 standalone gas-gauge"
 	depends on W1
