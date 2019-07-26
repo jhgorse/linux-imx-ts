@@ -120,12 +120,14 @@ dtb-$(CONFIG_ARCH_FSL_IMX8MQ) += fsl-imx8mq-ddr3l-arm2.dtb \
 				 fsl-imx8mq-var-dart-emmc-wifi-hdmi-cb12.dtb \
 				 fsl-imx8mq-var-dart-emmc-wifi-lvds-cb12.dtb \
 				 fsl-imx8mq-var-dart-emmc-wifi-dual-display-cb12.dtb \
+				 fsl-imx8mq-var-dart-emmc-wifi-sparton.dtb \
 				 fsl-imx8mq-var-dart-sd-emmc-hdmi.dtb \
 				 fsl-imx8mq-var-dart-sd-emmc-lvds.dtb \
 				 fsl-imx8mq-var-dart-sd-emmc-dual-display.dtb \
 				 fsl-imx8mq-var-dart-sd-emmc-hdmi-cb12.dtb \
 				 fsl-imx8mq-var-dart-sd-emmc-lvds-cb12.dtb \
 				 fsl-imx8mq-var-dart-sd-emmc-dual-display-cb12.dtb \
+				 fsl-imx8mq-var-dart-sd-emmc-sparton.dtb \
 				 fsl-imx8mq-var-dart-m4-emmc-wifi-hdmi.dtb \
 				 fsl-imx8mq-var-dart-m4-emmc-wifi-lvds.dtb \
 				 fsl-imx8mq-var-dart-m4-emmc-wifi-dual-display.dtb \
