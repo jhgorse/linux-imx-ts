@@ -1,0 +1,308 @@
+/*
+ * Copyright 2019 Sparton
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+/ {
+	compatible = "variscite,imx8m-dart", "fsl,imx8mq";
+
+	/delete-node/ leds;
+	/delete-node/ gpio-keys;
+
+	backlight: backlight {
+		pwms = <&pwm2 0 1000000 0>;
+		status = "enabled";
+	};
+
+	gpio-keys {
+		compatible = "gpio-keys";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_gpio_inputs>;
+
+		GPIO220 {
+			gpios = <&gpio2 20 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_WAKEUP>;
+		};
+
+		GPIO101 {
+			gpios = <&gpio1 1 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_F1>;
+		};
+
+		GPIO301 {
+			gpios = <&gpio3 1 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_F2>;
+		};
+
+		GPIO303 {
+			gpios = <&gpio3 3 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_F3>;
+		};
+
+		GPIO306 {
+			gpios = <&gpio3 6 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_F4>;
+		};
+
+		GPIO307 {
+			gpios = <&gpio3 7 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_F5>;
+		};
+
+		GPIO308 {
+			gpios = <&gpio3 8 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_F6>;
+		};
+
+		GPIO316 {
+			gpios = <&gpio3 16 GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_F7>;
+		};
+	};
+
+	gpio-leds {
+		compatible = "gpio-leds";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_gpio_outputs>;
+
+
+		GPIO309 {
+			gpios = <&gpio3 9 GPIO_ACTIVE_LOW>;
+		};
+
+		GPIO310 {
+			gpios = <&gpio3 10 GPIO_ACTIVE_LOW>;
+		};
+
+		GPIO314 {
+			gpios = <&gpio3 14 GPIO_ACTIVE_LOW>;
+		};
+
+		GPIO315 {
+			gpios = <&gpio3 15 GPIO_ACTIVE_LOW>;
+		};
+
+		GPIO322 {
+			gpios = <&gpio3 22 GPIO_ACTIVE_LOW>;
+		};
+
+		GPIO324 {
+			gpios = <&gpio3 24 GPIO_ACTIVE_LOW>;
+		};
+
+		GPIO325 {
+			gpios = <&gpio3 25 GPIO_ACTIVE_LOW>;
+		};
+
+		USB1_TRIGn {
+			gpios = <&gpio5 28 GPIO_ACTIVE_LOW>;
+		};
+
+		USB1_PWREN {
+			gpios = <&gpio5 29 GPIO_ACTIVE_LOW>;
+		};
+	};
+
+	pwm-leds {
+		compatible = "pwm-leds";
+
+		pwm1led {
+			pwms = <&pwm1 0 100000>;
+			max-brightness = <255>;
+		};
+
+		pwm3led {
+			pwms = <&pwm3 0 100000>;
+			max-brightness = <255>;
+		};
+	};
+};
+
+&ecspi1 {
+	status = "disabled"; 	/* MOSI pin conflict with RTC irq */
+};
+
+&iomuxc {
+	pinctrl-names = "default";
+
+	imx8m-var-dart {
+		pinctrl_bq25895: bq25895grp {
+			fsl,pins = <
+				MX8MQ_IOMUXC_SAI1_RXFS_GPIO4_IO0	0x19	/* charger enable */
+				MX8MQ_IOMUXC_SAI1_RXC_GPIO4_IO1		0x19	/* charger interrupt */
+			>;
+		};
+
+		pinctrl_gpio_inputs: gpioinputsgrp {
+			fsl,pins = <
+				MX8MQ_IOMUXC_SD2_WP_GPIO2_IO20		0x19	/* GPIO220 */
+				MX8MQ_IOMUXC_GPIO1_IO01_GPIO1_IO1	0x19	/* GPIO101 */
+				MX8MQ_IOMUXC_NAND_CE0_B_GPIO3_IO1	0x19	/* GPIO301 */
+				MX8MQ_IOMUXC_NAND_CE2_B_GPIO3_IO3	0x19	/* GPIO303 */
+				MX8MQ_IOMUXC_NAND_DATA00_GPIO3_IO6	0x19	/* GPIO306 */
+				MX8MQ_IOMUXC_NAND_DATA01_GPIO3_IO7	0x19	/* GPIO307 */
+				MX8MQ_IOMUXC_NAND_DATA02_GPIO3_IO8	0x19	/* GPIO308 */
+				MX8MQ_IOMUXC_NAND_READY_B_GPIO3_IO16	0x19	/* GPIO316 */
+			>;
+		};
+
+		pinctrl_gpio_outputs: gpiooutputsgrp {
+			fsl,pins = <
+				MX8MQ_IOMUXC_NAND_DATA03_GPIO3_IO9	0x19	/* GPIO309 */
+				MX8MQ_IOMUXC_NAND_DATA04_GPIO3_IO10	0x19	/* GPIO310 */
+				MX8MQ_IOMUXC_NAND_DQS_GPIO3_IO14	0x19	/* GPIO314 */
+				MX8MQ_IOMUXC_NAND_RE_B_GPIO3_IO15	0x19	/* GPIO315 */
+				MX8MQ_IOMUXC_SAI5_RXD1_GPIO3_IO22	0x19	/* GPIO322 */
+				MX8MQ_IOMUXC_SAI5_RXD3_GPIO3_IO24	0x19	/* GPIO324 */
+				MX8MQ_IOMUXC_SAI5_MCLK_GPIO3_IO25	0x19	/* GPIO325 */
+				MX8MQ_IOMUXC_UART4_RXD_GPIO5_IO28	0x19	/* USB1_TRIGn */
+				MX8MQ_IOMUXC_UART4_TXD_GPIO5_IO29	0x19	/* USB1_PWREN */
+			>;
+		};
+
+		pinctrl_ltc3370: ltc3370grp {
+			fsl,pins = <
+				MX8MQ_IOMUXC_NAND_WE_B_GPIO3_IO17	0x19	/* PMIC_EN3 */
+				MX8MQ_IOMUXC_NAND_WP_B_GPIO3_IO18	0x19	/* PMIC_EN2 */
+				MX8MQ_IOMUXC_SAI5_RXFS_GPIO3_IO19	0x19	/* PMIC_EN4 */
+				MX8MQ_IOMUXC_SAI5_RXC_GPIO3_IO20	0x19	/* PMIC_EN4 */
+			>;
+		};
+
+		pinctrl_m41t62: m41t62grp {
+			fsl,pins = <
+				MX8MQ_IOMUXC_ECSPI1_MOSI_GPIO5_IO7	0x19	/* rtc interrupt */
+			>;
+		};
+
+		pinctrl_maxtouch: maxtouchgrp {
+			fsl,pins = <
+				MX8MQ_IOMUXC_GPIO1_IO03_GPIO1_IO3	0x19	/* cap touch reset */
+				MX8MQ_IOMUXC_GPIO1_IO10_GPIO1_IO10	0x19	/* cap touch interrupt */
+			>;
+		};
+
+		pinctrl_pwm1: pwm1grp {
+			fsl,pins = <
+				MX8MQ_IOMUXC_SPDIF_EXT_CLK_PWM1_OUT 	0x06	/* pwm1 output */
+			>;
+		};
+
+		pinctrl_pwm2: pwm2grp {
+			fsl,pins = <
+				MX8MQ_IOMUXC_SPDIF_RX_PWM2_OUT		0x06	/* pwm2 output */
+			>;
+		};
+
+		pinctrl_pwm3: pwm3grp {
+			fsl,pins = <
+				MX8MQ_IOMUXC_SPDIF_TX_PWM3_OUT		0x06	/* pwm3 output */
+			>;
+		};
+	};
+};
+
+&i2c2 {
+	/delete-node/ rtc@0x68;		/* address conflict with m41t62 */
+
+	maxtouch: maxtouch@4a {
+		compatible = "atmel,maxtouch";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_maxtouch>;
+		interrupt-parent = <&gpio1>;
+		interrupts = <10 GPIO_ACTIVE_LOW>;
+		reset-gpios = <&gpio1 3 GPIO_ACTIVE_LOW>;
+		reg = <0x4a>;
+		status = "okay";
+	};
+
+	vcnl4200_2: vcnl4200_2@51 {
+		compatible = "vishay,vcnl4200";
+		reg = <0x51>;
+		status = "okay";
+	};
+
+	m41t62: m41t62@68 {
+		compatible = "st,m41t62";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_m41t62>;
+		interrupt-parent = <&gpio5>;
+		interrupts = <7 GPIO_ACTIVE_LOW>;
+		reg = <0x68>;
+		status = "okay";
+	};
+};
+
+&i2c3 {
+	vcnl4200_3: vcnl4200_3@51 {
+		compatible = "vishay,vcnl4200";
+		reg = <0x51>;
+		status = "okay";
+	};
+
+	bq25895: bq25895@6a {
+		compatible = "ti,bq25895";
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_bq25895>;
+		reg = <0x6a>;
+		status = "okay";
+		ti,battery-regulation-voltage = <4200000>;
+		ti,charge-current = <1000000>;
+		ti,termination-current = <50000>;
+		ti,precharge-current = <128000>;
+		ti,minimum-sys-voltage = <3600000>;
+		ti,boost-voltage = <5000000>;
+		ti,boost-max-current = <1000000>;
+		ti,use-ilim-pin;
+		ti,thermal-regulation-threshold = <120>;
+	};
+};
+
+&i2c4 {
+	max11615: max11615@33 {
+		compatible = "maxim,max11615";
+		reg = <0x33>;
+	};
+};
+
+&ov5640_mipi1 {
+	status = "disabled"; 	/* reset pin conflict with USB1_TRIGn */
+};
+
+&pcie0 {
+	status = "disabled"; 	/* not mounted */
+};
+
+&pwm1 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_pwm1>;
+	status = "okay";
+};
+
+&pwm2 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_pwm2>;
+};
+
+&pwm3 {
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_pwm3>;
+	status = "okay";
+};
+
+&typec_ptn5150 {
+	status = "disabled";	/* connect pin conflict with maxtouch irq */
+};
+
+&usb_dwc3_0 {
+	extcon = <>;	/* no typec@3d */
+};
