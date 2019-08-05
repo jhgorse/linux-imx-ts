@@ -224,16 +224,18 @@
 	};
 
 	bq25895: bq25895@6a {
-		compatible = "ti,bq25895";
+		compatible = "ti,bq25890";
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_bq25895>;
+		interrupt-parent = <&gpio4>;
+		interrupts = <1 GPIO_ACTIVE_LOW>;
 		reg = <0x6a>;
 		status = "okay";
-		ti,battery-regulation-voltage = <4200000>;
-		ti,charge-current = <1000000>;
-		ti,termination-current = <50000>;
+		ti,battery-regulation-voltage = <4160000>;
+		ti,charge-current = <3584000>;
+		ti,termination-current = <64000>;
 		ti,precharge-current = <128000>;
-		ti,minimum-sys-voltage = <3600000>;
+		ti,minimum-sys-voltage = <3000000>;
 		ti,boost-voltage = <5000000>;
 		ti,boost-max-current = <1000000>;
 		ti,use-ilim-pin;
