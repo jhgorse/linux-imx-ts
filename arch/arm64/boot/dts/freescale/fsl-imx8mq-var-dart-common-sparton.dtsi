@@ -115,11 +115,6 @@
 	pwm-leds {
 		compatible = "pwm-leds";
 
-		pwm1led {
-			pwms = <&pwm1 0 100000>;
-			max-brightness = <255>;
-		};
-
 		pwm3led {
 			pwms = <&pwm3 0 100000>;
 			max-brightness = <255>;
@@ -188,12 +183,6 @@
 			fsl,pins = <
 				MX8MQ_IOMUXC_GPIO1_IO03_GPIO1_IO3	0x19	/* cap touch reset */
 				MX8MQ_IOMUXC_GPIO1_IO10_GPIO1_IO10	0x19	/* cap touch interrupt */
-			>;
-		};
-
-		pinctrl_pwm1: pwm1grp {
-			fsl,pins = <
-				MX8MQ_IOMUXC_SPDIF_EXT_CLK_PWM1_OUT 	0x06	/* pwm1 output */
 			>;
 		};
 
@@ -280,12 +269,6 @@
 
 &pcie0 {
 	status = "disabled"; 	/* not mounted */
-};
-
-&pwm1 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_pwm1>;
-	status = "okay";
 };
 
 &pwm2 {
