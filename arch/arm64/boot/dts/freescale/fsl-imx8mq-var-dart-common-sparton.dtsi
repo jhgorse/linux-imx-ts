@@ -111,15 +111,6 @@
 			gpios = <&gpio5 29 GPIO_ACTIVE_LOW>;
 		};
 	};
-
-	pwm-leds {
-		compatible = "pwm-leds";
-
-		pwm3led {
-			pwms = <&pwm3 0 100000>;
-			max-brightness = <255>;
-		};
-	};
 };
 
 &ecspi1 {
@@ -189,12 +180,6 @@
 		pinctrl_pwm2: pwm2grp {
 			fsl,pins = <
 				MX8MQ_IOMUXC_SPDIF_RX_PWM2_OUT		0x06	/* pwm2 output */
-			>;
-		};
-
-		pinctrl_pwm3: pwm3grp {
-			fsl,pins = <
-				MX8MQ_IOMUXC_SPDIF_TX_PWM3_OUT		0x06	/* pwm3 output */
 			>;
 		};
 	};
@@ -274,12 +259,6 @@
 &pwm2 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_pwm2>;
-};
-
-&pwm3 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&pinctrl_pwm3>;
-	status = "okay";
 };
 
 &typec_ptn5150 {
