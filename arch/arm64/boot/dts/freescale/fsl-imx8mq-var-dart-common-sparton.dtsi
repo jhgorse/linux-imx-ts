@@ -194,7 +194,7 @@
 		pinctrl-0 = <&pinctrl_maxtouch>;
 		interrupt-parent = <&gpio1>;
 		interrupts = <10 GPIO_ACTIVE_LOW>;
-		reset-gpios = <&gpio1 3 GPIO_ACTIVE_LOW>;
+		reset-gpios = <&gpio1 3 GPIO_ACTIVE_HIGH>;
 		reg = <0x4a>;
 		status = "okay";
 	};
