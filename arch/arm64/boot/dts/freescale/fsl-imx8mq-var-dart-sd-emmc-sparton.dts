@@ -20,3 +20,8 @@
 / {
 	model = "Sparton ft Variscite DART-MX8M SD+EMMC+LVDS";
 };
+
+&usdhc2 {
+	/* remove 200 MHz settings due to U42 attenuation */
+	pinctrl-names = "default", "state_100mhz";
+};
