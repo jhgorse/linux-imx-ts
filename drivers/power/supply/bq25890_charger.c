@@ -865,7 +865,7 @@ static int bq25890_probe(struct i2c_client *client,
 		return bq->chip_id;
 	}
 
-	if ((bq->chip_id != BQ25890_ID) && (bq->chip_id != BQ25896_ID)
+	if ((bq->chip_id != BQ25890_ID) && (bq->chip_id != BQ25895_ID)
 			&& (bq->chip_id != BQ25896_ID)) {
 		dev_err(dev, "Chip with ID=%d, not supported!\n", bq->chip_id);
 		return -ENODEV;
