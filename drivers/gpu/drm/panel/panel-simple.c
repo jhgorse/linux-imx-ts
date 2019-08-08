@@ -25,6 +25,7 @@
 #include <linux/gpio/consumer.h>
 #include <linux/module.h>
 #include <linux/of_platform.h>
+#include <video/of_videomode.h>
 #include <linux/platform_device.h>
 #include <linux/regulator/consumer.h>
 
@@ -35,6 +36,7 @@
 
 #include <video/display_timing.h>
 #include <video/videomode.h>
+#include <dt-bindings/display/simple_panel_mipi_cmds.h>
 
 struct panel_desc {
 	const struct drm_display_mode *modes;
@@ -75,24 +77,141 @@ struct panel_desc {
 	u32 bus_flags;
 };
 
+struct mipi_cmd {
+	const u8* mipi_cmds;
+	unsigned length;
+};
+
 struct panel_simple {
 	struct drm_panel base;
 	bool prepared;
 	bool enabled;
 
 	const struct panel_desc *desc;
+	struct panel_desc dt_desc;
+	struct drm_display_mode dt_mode;
 
 	struct backlight_device *backlight;
 	struct regulator *supply;
 	struct i2c_adapter *ddc;
 
 	struct gpio_desc *enable_gpio;
+	struct gpio_desc *reset;
+	struct videomode vm;
+	struct mipi_cmd mipi_cmds_init;
+	struct mipi_cmd mipi_cmds_enable;
+	struct mipi_cmd mipi_cmds_disable;
 };
 
 static inline struct panel_simple *to_panel_simple(struct drm_panel *panel)
 {
 	return container_of(panel, struct panel_simple, base);
 }
+
+static int send_mipi_cmd_list(struct panel_simple *panel, struct mipi_cmd *mc)
+{
+	struct mipi_dsi_device *dsi;
+	const u8 *cmd = mc->mipi_cmds;
+	unsigned length = mc->length;
+	u8 data[4];
+	unsigned len;
+	int ret;
+	int generic;
+	int match = 0;
+	int readval, matchval;
+
+	pr_debug("%s:%d\n", __func__, length);
+	if (!cmd || !length)
+		return 0;
+
+	dsi = container_of(panel->base.dev, struct mipi_dsi_device, dev);
+	dsi->mode_flags |= MIPI_DSI_MODE_LPM;
+	while (1) {
+		len = *cmd++;
+		length--;
+		generic = len & 0x80;
+		len &= 0x7f;
+
+		ret = 0;
+		if (len < S_DELAY) {
+			if (generic)
+				ret = mipi_dsi_generic_write(dsi, cmd, len);
+			else
+				ret = mipi_dsi_dcs_write_buffer(dsi, cmd, len);
+		} else if (len == S_MRPS) {
+				ret = mipi_dsi_set_maximum_return_packet_size(
+					dsi, cmd[0]);
+				len = 1;
+		} else if (len == S_DCS_READ) {
+			data[0] = 0;
+			ret =  mipi_dsi_dcs_read(dsi, cmd[0], data, 1);
+			pr_debug("Read DCS(%d): (%x) %x cmp %x\n",
+				ret, cmd[0], data[0], cmd[1]);
+			len = 2;
+			if (data[0] != cmd[1])
+				match = -EINVAL;
+		} else if (len == S_DCS_READ4) {
+			data[0] = data[1] = data[2] = data[3] = 0;
+			if (generic) {
+				ret =  mipi_dsi_generic_read(dsi, cmd, 2, data, 4);
+				readval = data[0] | (data[1] << 8) | (data[2] << 16) | (data[3] << 24);
+				matchval = cmd[2] | (cmd[3] << 8) | (cmd[4] << 16) | (cmd[5] << 24);
+				pr_debug("Read GEN(%d): (%02x %02x) %08x cmp %08x\n",
+					ret, cmd[0], cmd[1], readval, matchval);
+				len = 6;
+			} else {
+				ret =  mipi_dsi_dcs_read(dsi, cmd[0], data, 4);
+				readval = data[0] | (data[1] << 8) | (data[2] << 16) | (data[3] << 24);
+				matchval = cmd[1] | (cmd[2] << 8) | (cmd[3] << 16) | (cmd[4] << 24);
+				pr_debug("Read DCS(%d): (%x) %x cmp %x\n",
+					ret, cmd[0], readval, matchval);
+				len = 5;
+			}
+			if (readval != matchval)
+				match = -EINVAL;
+		} else if (len == S_DELAY) {
+			msleep(cmd[0]);
+			len = 1;
+			if (length <= len)
+				break;
+			cmd += len;
+			length -= len;
+			len = 0;
+		} else {
+			dev_err(&dsi->dev, "Unknown DCS command 0x%x0x\n", cmd[-1]);
+			match = -EINVAL;
+			break;
+		}
+		if (ret < 0) {
+			if (len == 1) {
+				dev_err(&dsi->dev,
+					"Failed to send DCS (%d), (%d)%02x\n",
+					ret, len, cmd[0]);
+			} else {
+				dev_err(&dsi->dev,
+					"Failed to send DCS (%d), (%d)%02x %02x\n",
+					ret, len, cmd[0], cmd[1]);
+			}
+			return ret;
+		} else {
+			if (len == 6) {
+				pr_debug("Sent DCS (%d), (%d)%02x %02x: %02x %02x %02x %02x\n",
+					ret, len, cmd[0], cmd[1], cmd[2], cmd[3], cmd[4], cmd[5]);
+			} else if (len == 1) {
+				pr_debug("Sent DCS (%d), (%d)%02x\n",
+					ret, len, cmd[0]);
+			} else if (len) {
+				pr_debug("Sent DCS (%d), (%d)%02x %02x\n",
+					ret, len, cmd[0], cmd[1]);
+			}
+		}
+		if (length <= len)
+			break;
+		cmd += len;
+		length -= len;
+	}
+	return match;
+};
 
 static int panel_simple_get_fixed_modes(struct panel_simple *panel)
 {
@@ -174,6 +293,7 @@ static int panel_simple_disable(struct drm_panel *panel)
 
 	if (p->desc->delay.disable)
 		msleep(p->desc->delay.disable);
+	send_mipi_cmd_list(p, &p->mipi_cmds_disable);
 
 	p->enabled = false;
 
@@ -187,6 +307,8 @@ static int panel_simple_unprepare(struct drm_panel *panel)
 	if (!p->prepared)
 		return 0;
 
+	if (p->reset)
+		gpiod_set_value_cansleep(p->reset, 1);
 	if (p->enable_gpio)
 		gpiod_set_value_cansleep(p->enable_gpio, 0);
 
@@ -216,10 +338,18 @@ static int panel_simple_prepare(struct drm_panel *panel)
 
 	if (p->enable_gpio)
 		gpiod_set_value_cansleep(p->enable_gpio, 1);
+	if (p->reset)
+		gpiod_set_value_cansleep(p->reset, 0);
+
 
 	if (p->desc->delay.prepare)
 		msleep(p->desc->delay.prepare);
 
+	err = send_mipi_cmd_list(p, &p->mipi_cmds_init);
+	if (err) {
+		regulator_disable(p->supply);
+		return err;
+	}
 	p->prepared = true;
 
 	return 0;
@@ -228,10 +358,14 @@ static int panel_simple_prepare(struct drm_panel *panel)
 static int panel_simple_enable(struct drm_panel *panel)
 {
 	struct panel_simple *p = to_panel_simple(panel);
+	int ret;
 
 	if (p->enabled)
 		return 0;
 
+	ret = send_mipi_cmd_list(p, &p->mipi_cmds_enable);
+	if (ret < 0)
+		goto fail;
 	if (p->desc->delay.enable)
 		msleep(p->desc->delay.enable);
 
@@ -244,6 +378,12 @@ static int panel_simple_enable(struct drm_panel *panel)
 	p->enabled = true;
 
 	return 0;
+fail:
+	if (p->reset)
+		gpiod_set_value_cansleep(p->reset, 1);
+	if (p->enable_gpio)
+		gpiod_set_value_cansleep(p->enable_gpio, 0);
+	return ret;
 }
 
 static int panel_simple_get_modes(struct drm_panel *panel)
@@ -293,6 +433,31 @@ static const struct drm_panel_funcs panel_simple_funcs = {
 	.get_timings = panel_simple_get_timings,
 };
 
+void check_for_cmds(struct device_node *np, const char *dt_name, struct mipi_cmd *mc)
+{
+	void *data;
+	int data_len;
+	int ret;
+
+	/* Check for mipi command arrays */
+	if (!of_get_property(np, dt_name, &data_len) || !data_len)
+		return;
+
+	data = kmalloc(data_len, GFP_KERNEL);
+	if (!data)
+		return;
+
+	ret = of_property_read_u8_array(np, dt_name, data, data_len);
+	if (ret) {
+		pr_info("failed to read %s from DT: %d\n",
+			dt_name, ret);
+		kfree(data);
+		return;
+	}
+	mc->mipi_cmds = data;
+	mc->length = data_len;
+}
+
 static int panel_simple_probe(struct device *dev, const struct panel_desc *desc)
 {
 	struct device_node *backlight, *ddc;
@@ -306,10 +471,94 @@ static int panel_simple_probe(struct device *dev, const struct panel_desc *desc)
 	panel->enabled = false;
 	panel->prepared = false;
 	panel->desc = desc;
+	if (!desc) {
+		struct videomode vm;
+		struct drm_display_mode *dm = &panel->dt_mode;
+		const char *bf;
+		struct panel_desc *ds = &panel->dt_desc;
+		struct device_node *np = dev->of_node;
+		struct device_node *cmds_np;
+		u32 bridge_de_active;
+		u32 bridge_sync_active;
+
+		of_property_read_u32(np, "panel-width-mm", &ds->size.width);
+		of_property_read_u32(np, "panel-height-mm", &ds->size.height);
+		err = of_get_videomode(np, &vm, 0);
+		if (of_property_read_u32(np, "bridge-de-active", &bridge_de_active)) {
+			bridge_de_active = -1;
+		}
+		if (of_property_read_u32(np, "bridge-sync-active", &bridge_sync_active)) {
+			bridge_sync_active = -1;
+		}
+
+		if (err < 0)
+			return err;
+		drm_display_mode_from_videomode(&vm, dm);
+		if (vm.flags & DISPLAY_FLAGS_DE_HIGH)
+			ds->bus_flags |= DRM_BUS_FLAG_DE_HIGH;
+		if (vm.flags & DISPLAY_FLAGS_DE_LOW)
+			ds->bus_flags |= DRM_BUS_FLAG_DE_LOW;
+		if (bridge_de_active <= 1) {
+			ds->bus_flags &= ~(DRM_BUS_FLAG_DE_HIGH |
+					DRM_BUS_FLAG_DE_LOW);
+			ds->bus_flags |= bridge_de_active ? DRM_BUS_FLAG_DE_HIGH
+					: DRM_BUS_FLAG_DE_LOW;
+		}
+		if (bridge_sync_active <= 1) {
+			dm->flags &= ~(
+				DRM_MODE_FLAG_PHSYNC | DRM_MODE_FLAG_PVSYNC |
+				DRM_MODE_FLAG_NHSYNC | DRM_MODE_FLAG_NVSYNC);
+			dm->flags |= bridge_sync_active ?
+				DRM_MODE_FLAG_PHSYNC | DRM_MODE_FLAG_PVSYNC :
+				DRM_MODE_FLAG_NHSYNC | DRM_MODE_FLAG_NVSYNC;
+		}
+		if (vm.flags & DISPLAY_FLAGS_PIXDATA_NEGEDGE)
+			ds->bus_flags |= DRM_BUS_FLAG_PIXDATA_NEGEDGE;
+		if (vm.flags & DISPLAY_FLAGS_PIXDATA_POSEDGE)
+			ds->bus_flags |= DRM_BUS_FLAG_PIXDATA_POSEDGE;
+
+		err = of_property_read_string(np, "bus-format", &bf);
+		if (err) {
+			dev_err(dev, "bus-format missing %d\n", err);
+			return err;
+		}
+		if (!strcmp(bf, "rgb888")) {
+			ds->bus_format = MEDIA_BUS_FMT_RGB888_1X24;
+		} else if (!strcmp(bf, "rgb666")) {
+			ds->bus_format = MEDIA_BUS_FMT_RGB666_1X18;
+		} else {
+			dev_err(dev, "unknown bus-format %s\n", bf);
+			return -EINVAL;
+		}
+		of_property_read_u32(np, "delay-prepare", &ds->delay.prepare);
+		of_property_read_u32(np, "delay-enable", &ds->delay.enable);
+		of_property_read_u32(np, "delay-disable", &ds->delay.disable);
+		of_property_read_u32(np, "delay-unprepare", &ds->delay.unprepare);
+		of_property_read_u32(np, "bits-per-color", &ds->bpc);
+		ds->modes = dm;
+		ds->num_modes = 1;
+		panel->desc = ds;
+		cmds_np = of_parse_phandle(np, "mipi-cmds", 0);
+		if (cmds_np) {
+			check_for_cmds(cmds_np, "mipi-cmds-init",
+				       &panel->mipi_cmds_init);
+			check_for_cmds(cmds_np, "mipi-cmds-enable",
+				       &panel->mipi_cmds_enable);
+			check_for_cmds(cmds_np, "mipi-cmds-disable",
+				       &panel->mipi_cmds_disable);
+		}
+	}
 
 	panel->supply = devm_regulator_get(dev, "power");
 	if (IS_ERR(panel->supply))
 		return PTR_ERR(panel->supply);
+
+	panel->reset = devm_gpiod_get_optional(dev, "reset", GPIOD_OUT_HIGH);
+	if (IS_ERR(panel->reset)) {
+		err = PTR_ERR(panel->reset);
+		dev_err(dev, "failed to request reset: %d\n", err);
+		return err;
+	}
 
 	panel->enable_gpio = devm_gpiod_get_optional(dev, "enable",
 						     GPIOD_OUT_LOW);
@@ -1238,7 +1487,7 @@ static const struct panel_desc jdi_tx26d202vm0bwa = {
 		/*
 		 * The panel spec recommends one second delay
 		 * to the below items.  However, it's a bit too
-		 * long in pratical.  Based on tests, it turns
+		 * long in practice.  Based on tests, it turns
 		 * out 100 milliseconds is fine.
 		 */
 		.prepare = 100,
@@ -2385,6 +2634,9 @@ static const struct of_device_id dsi_of_match[] = {
 		.compatible = "panasonic,vvx10f004b00",
 		.data = &panasonic_vvx10f004b00
 	}, {
+		.compatible = "panel,simple",
+		.data = NULL
+	}, {
 		/* sentinel */
 	}
 };
@@ -2394,6 +2646,7 @@ static int panel_simple_dsi_probe(struct mipi_dsi_device *dsi)
 {
 	const struct panel_desc_dsi *desc;
 	const struct of_device_id *id;
+	const struct panel_desc *pd = NULL;
 	int err;
 
 	id = of_match_node(dsi_of_match, dsi->dev.of_node);
@@ -2402,13 +2655,49 @@ static int panel_simple_dsi_probe(struct mipi_dsi_device *dsi)
 
 	desc = id->data;
 
-	err = panel_simple_probe(&dsi->dev, &desc->desc);
+	if (desc) {
+		dsi->mode_flags = desc->flags;
+		dsi->format = desc->format;
+		dsi->lanes = desc->lanes;
+		pd = &desc->desc;
+	} else {
+		struct device_node *np = dsi->dev.of_node;
+		const char *df;
+
+		err = of_property_read_u32(np, "dsi-lanes", &dsi->lanes);
+		if (err < 0) {
+			dev_err(&dsi->dev, "Failed to get dsi-lanes property (%d)\n", err);
+			return err;
+		}
+		err = of_property_read_string(np, "dsi-format", &df);
+		if (err) {
+			dev_err(&dsi->dev, "dsi-format missing. %d\n", err);
+			return err;
+		}
+		if (!strcmp(df, "rgb888")) {
+			dsi->format = MIPI_DSI_FMT_RGB888;
+		} else if (!strcmp(df, "rgb666")) {
+			dsi->format = MIPI_DSI_FMT_RGB666;
+		} else {
+			dev_err(&dsi->dev, "unknown dsi-format %s\n", df);
+			return -EINVAL;
+		}
+		if (of_property_read_bool(np, "mode-clock-non-contiguous"))
+			dsi->mode_flags |= MIPI_DSI_CLOCK_NON_CONTINUOUS;
+		if (of_property_read_bool(np, "mode-skip-eot"))
+			dsi->mode_flags |= MIPI_DSI_MODE_EOT_PACKET;
+		if (of_property_read_bool(np, "mode-video"))
+			dsi->mode_flags |= MIPI_DSI_MODE_VIDEO;
+		if (of_property_read_bool(np, "mode-video-burst"))
+			dsi->mode_flags |= MIPI_DSI_MODE_VIDEO_BURST;
+		if (of_property_read_bool(np, "mode-video-hse"))
+			dsi->mode_flags |= MIPI_DSI_MODE_VIDEO_HSE;
+		if (of_property_read_bool(np, "mode-video-sync-pulse"))
+			dsi->mode_flags |= MIPI_DSI_MODE_VIDEO_SYNC_PULSE;
+	}
+	err = panel_simple_probe(&dsi->dev, pd);
 	if (err < 0)
 		return err;
-
-	dsi->mode_flags = desc->flags;
-	dsi->format = desc->format;
-	dsi->lanes = desc->lanes;
 
 	return mipi_dsi_attach(dsi);
 }
