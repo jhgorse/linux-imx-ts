@@ -244,10 +244,9 @@
 };
 
 &i2c4 {
-	max11615: max11615@33 {
-		compatible = "maxim,max11615";
-		reg = <0x33>;
-	};
+	status = "disabled";  /* Reserve for M4 */
+
+	/delete-node/ ov5640_mipi2@0x3c;
 };
 
 &ov5640_mipi1 {
