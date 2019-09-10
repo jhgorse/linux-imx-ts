@@ -111,6 +111,18 @@
 			gpios = <&gpio5 29 GPIO_ACTIVE_LOW>;
 		};
 	};
+
+	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		m4_reserved: m4@0x80000000 {
+			no-map;
+			reg = <0 0x80000000 0 0x1000000>;
+		};
+
+	};
 };
 
 &ecspi1 {
@@ -247,6 +259,14 @@
 	status = "disabled";  /* Reserve for M4 */
 
 	/delete-node/ ov5640_mipi2@0x3c;
+};
+
+&pwm3 {
+	status = "disabled";
+};
+
+&wdog3{
+	status = "disabled";
 };
 
 &ov5640_mipi1 {
