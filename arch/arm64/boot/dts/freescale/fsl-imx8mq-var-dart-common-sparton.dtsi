@@ -20,7 +20,7 @@
 
 	backlight: backlight {
 		pwms = <&pwm2 0 1000000 0>;
-		status = "enabled";
+		status = "okay";
 	};
 
 	gpio-keys {
@@ -261,6 +261,7 @@
 &pwm2 {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_pwm2>;
+	status = "okay";
 };
 
 &typec_ptn5150 {
