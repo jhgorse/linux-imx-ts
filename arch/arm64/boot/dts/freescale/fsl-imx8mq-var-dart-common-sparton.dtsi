@@ -211,12 +211,12 @@
 		status = "okay";
 	};
 
-	vcnl4200_2: vcnl4200_2@51 {
+/*	vcnl4200_2: vcnl4200_2@51 {
 		compatible = "vishay,vcnl4200";
 		reg = <0x51>;
 		status = "okay";
 	};
-
+*/
 	m41t62: m41t62@68 {
 		compatible = "st,m41t62";
 		pinctrl-names = "default";
@@ -229,12 +229,12 @@
 };
 
 &i2c3 {
-	vcnl4200_3: vcnl4200_3@51 {
+/*	vcnl4200_3: vcnl4200_3@51 {
 		compatible = "vishay,vcnl4200";
 		reg = <0x51>;
 		status = "okay";
 	};
-
+*/
 	bq25895: bq25895@6a {
 		compatible = "ti,bq25890";
 		pinctrl-names = "default";
