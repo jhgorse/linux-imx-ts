@@ -269,6 +269,10 @@
 	/delete-node/ ov5640_mipi2@0x3c;
 };
 
+&uart2 {
+	status = "disabled";  /* Reserve for M4 */
+}
+
 &pwm3 {
 	status = "disabled";
 };
@@ -276,6 +280,10 @@
 &wdog3{
 	status = "disabled";
 };
+
+&sai3{
+	status = "disabled";
+}
 
 &ov5640_mipi1 {
 	status = "disabled"; 	/* reset pin conflict with USB1_TRIGn */
