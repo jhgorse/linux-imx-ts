@@ -343,7 +343,18 @@ free_soc:
 device_initcall(imx8_soc_init);
 
 #define OCOTP_CFG3			0x440
+#define OCOTP_CFG3_SPEED_GRADING_SHIFT	8
+#define OCOTP_CFG3_SPEED_GRADING_MASK	(0x7 << 8)
+#define OCOTP_CFG3_SPEED_2GHZ		4
+#define OCOTP_CFG3_SPEED_1P8GHZ		3
+#define OCOTP_CFG3_SPEED_1P6GHZ		2
+#define OCOTP_CFG3_SPEED_1P2GHZ		1
+#define OCOTP_CFG3_SPEED_800MHZ		0
+#define OCOTP_CFG3_SPEED_1P0GHZ		1
+#define OCOTP_CFG3_SPEED_1P3GHZ		2
+#define OCOTP_CFG3_SPEED_1P5GHZ		3
 #define OCOTP_CFG3_MKT_SEGMENT_SHIFT	6
+#define OCOTP_CFG3_MKT_SEGMENT_MASK	(0x3 << 6)
 #define OCOTP_CFG3_CONSUMER		0
 #define OCOTP_CFG3_EXT_CONSUMER		1
 #define OCOTP_CFG3_INDUSTRIAL		2
@@ -353,7 +364,7 @@ static void __init imx8mq_opp_check_speed_grading(struct device *cpu_dev)
 {
 	struct device_node *np;
 	void __iomem *base;
-	u32 val;
+	u32 val, speed_grading;
 
 	np = of_find_compatible_node(NULL, NULL, "fsl,imx8mq-ocotp");
 	if (!np) {
@@ -367,6 +378,7 @@ static void __init imx8mq_opp_check_speed_grading(struct device *cpu_dev)
 		goto put_node;
 	}
 	val = readl_relaxed(base + OCOTP_CFG3);
+	speed_grading = (val >> OCOTP_CFG3_SPEED_GRADING_SHIFT) & 0x3;
 	val >>= OCOTP_CFG3_MKT_SEGMENT_SHIFT;
 	val &= 0x3;
 
@@ -376,12 +388,20 @@ static void __init imx8mq_opp_check_speed_grading(struct device *cpu_dev)
 			pr_warn("failed to disable 800MHz OPP!\n");
 		if (dev_pm_opp_disable(cpu_dev, 1300000000))
 			pr_warn("failed to disable 1.3GHz OPP!\n");
+		if (speed_grading != OCOTP_CFG3_SPEED_1P5GHZ) {
+			if (dev_pm_opp_disable(cpu_dev, 1500000000))
+				pr_warn("failed to disable 1.5GHz OPP!\n");
+		}
 		break;
 	case OCOTP_CFG3_INDUSTRIAL:
 		if (dev_pm_opp_disable(cpu_dev, 1000000000))
 			pr_warn("failed to disable 1GHz OPP!\n");
 		if (dev_pm_opp_disable(cpu_dev, 1500000000))
 			pr_warn("failed to disable 1.5GHz OPP!\n");
+		if (speed_grading != OCOTP_CFG3_SPEED_1P3GHZ) {
+			if (dev_pm_opp_disable(cpu_dev, 1300000000))
+				pr_warn("failed to disable 1.3GHz OPP!\n");
+		}
 		break;
 	default:
 		/* consumer part for default */
@@ -389,6 +409,61 @@ static void __init imx8mq_opp_check_speed_grading(struct device *cpu_dev)
 			pr_warn("failed to disable 800MHz OPP!\n");
 		if (dev_pm_opp_disable(cpu_dev, 1300000000))
 			pr_warn("failed to disable 1.3GHz OPP!\n");
+		if (speed_grading != OCOTP_CFG3_SPEED_1P5GHZ) {
+			if (dev_pm_opp_disable(cpu_dev, 1500000000))
+				pr_warn("failed to disable 1.5GHz OPP!\n");
+		}
+		break;
+	}
+
+	iounmap(base);
+
+put_node:
+	of_node_put(np);
+}
+
+static void __init imx8mm_opp_check_speed_grading(struct device *cpu_dev)
+{
+	struct device_node *np;
+	void __iomem *base;
+	u32 val, market;
+
+	np = of_find_compatible_node(NULL, NULL, "fsl,imx8mq-ocotp");
+	if (!np) {
+		pr_warn("failed to find ocotp node\n");
+		return;
+	}
+
+	base = of_iomap(np, 0);
+	if (!base) {
+		pr_warn("failed to map ocotp\n");
+		goto put_node;
+	}
+	val = readl_relaxed(base + OCOTP_CFG3);
+	/* market segment bit[7:6] */
+	market = (val & OCOTP_CFG3_MKT_SEGMENT_MASK)
+		>> OCOTP_CFG3_MKT_SEGMENT_SHIFT;
+	/* speed grading bit[10:8] */
+	val = (val & OCOTP_CFG3_SPEED_GRADING_MASK)
+		>> OCOTP_CFG3_SPEED_GRADING_SHIFT;
+
+	switch (market) {
+	case OCOTP_CFG3_CONSUMER:
+		if (val < OCOTP_CFG3_SPEED_1P8GHZ)
+			if (dev_pm_opp_disable(cpu_dev, 1800000000))
+				pr_warn("failed to disable 1.8GHz OPP!\n");
+		if (val < OCOTP_CFG3_SPEED_1P6GHZ)
+			if (dev_pm_opp_disable(cpu_dev, 1600000000))
+				pr_warn("failed to disable 1.6GHz OPP!\n");
+		break;
+	case OCOTP_CFG3_INDUSTRIAL:
+		if (dev_pm_opp_disable(cpu_dev, 1800000000))
+			pr_warn("failed to disable 1.8GHz OPP!\n");
+		if (val < OCOTP_CFG3_SPEED_1P6GHZ)
+			if (dev_pm_opp_disable(cpu_dev, 1600000000))
+				pr_warn("failed to disable 1.6GHz OPP!\n");
+		break;
+	default:
 		break;
 	}
 
@@ -420,6 +495,8 @@ static void __init imx8mq_opp_init(void)
 
 	if (of_machine_is_compatible("fsl,imx8mq"))
 		imx8mq_opp_check_speed_grading(cpu_dev);
+	else if (of_machine_is_compatible("fsl,imx8mm"))
+		imx8mm_opp_check_speed_grading(cpu_dev);
 
 put_node:
 	of_node_put(np);
