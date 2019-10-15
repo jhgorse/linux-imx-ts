@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 NXP
+ * Copyright 2018 NXP
  * Copyright 2019 Variscite Ltd.
  *
  * This program is free software; you can redistribute it and/or
@@ -12,6 +12,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
+
+#include "fsl-imx8mm-var-dart.dts"
 
 / {
 	reserved-memory {
@@ -27,15 +29,12 @@
 	};
 };
 
-&gpt1 {
-	status = "disabled";
-};
+/*
+ * ATTENTION: M4 may use IPs like below
+ * ECSPI0/ECSPI1/ECSPI2, GPIO4/GPIO5, GPT1, I2C4, WDOG1, UART2, PWM2, SDMA1/3
+ */
 
-&i2c3 {
-	status = "disabled";
-};
-
-&pwm2 {
+&i2c4 {
 	status = "disabled";
 };
 
@@ -49,7 +48,7 @@
 	status = "okay";
 };
 
-&tmu {
+&sdma1{
 	status = "disabled";
 };
 
@@ -57,6 +56,10 @@
 	status = "disabled";
 };
 
-&wdog3{
+&sdma3 {
+	status = "disabled";
+};
+
+&flexspi {
 	status = "disabled";
 };
