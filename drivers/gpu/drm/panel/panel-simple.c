@@ -21,6 +21,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+#define DEBUG
+
 #include <linux/backlight.h>
 #include <linux/gpio/consumer.h>
 #include <linux/module.h>

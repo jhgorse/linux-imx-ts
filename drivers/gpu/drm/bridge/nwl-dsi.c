@@ -13,6 +13,8 @@
  * GNU General Public License for more details.
  */
 
+#define DEBUG
+
 #include <asm/unaligned.h>
 #include <drm/bridge/nwl_dsi.h>
 #include <drm/drmP.h>
