@@ -191,7 +191,7 @@
 0x02 0xBF 0x7D /* VCOM offset 2 voltage set to -1.562 V as well */
 /* 0x82 0xC0 0x0C - undocumented, remove */
 /* 0x82 0xC1 0x00 - default value for VCMCTR */
-/* all undocumented 
+/* all undocumented
 0x83 0xC2 0x19 0x19
 0x83 0xC3 0x0A 0x0A
 0x83 0xC4 0x23 0x23 */
@@ -901,8 +901,6 @@
 &mipi_dsi_bridge {
 	status = "okay";
 
-	/delete-node/ port@1;		/* duplicate label 'mipi_dsi_bridge_out' */
-
 	panel@0 {
 		compatible = "panel,simple";
 		reg = <0>;
@@ -942,7 +940,9 @@
 		};
 	};
 
-	port@2 {
+	/* port@0 is the input to the bridge, and port@1 is the bridge output */
+
+	port@1 {
 		mipi_dsi_bridge_out: endpoint {
 			remote-endpoint = <&panel0_in>;
 		};
