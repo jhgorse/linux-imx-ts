@@ -126,7 +126,7 @@ static int send_mipi_cmd_list(struct panel_simple *panel, struct mipi_cmd *mc)
 
 	dsi = container_of(panel->base.dev, struct mipi_dsi_device, dev);
 	dsi->mode_flags |= MIPI_DSI_MODE_LPM;
-	while (1) {
+	while (length > 0) {
 		len = *cmd++;
 		length--;
 		generic = len & 0x80;
@@ -205,8 +205,10 @@ static int send_mipi_cmd_list(struct panel_simple *panel, struct mipi_cmd *mc)
 					ret, len, cmd[0], cmd[1]);
 			}
 		}
-		if (length <= len)
+		if (length < len) {
+			dev_err(&dsi->dev, "Unexpected end of data\n");
 			break;
+		}
 		cmd += len;
 		length -= len;
 	}
@@ -307,15 +309,14 @@ static int panel_simple_unprepare(struct drm_panel *panel)
 	if (!p->prepared)
 		return 0;
 
+	if (p->desc->delay.unprepare)
+		msleep(p->desc->delay.unprepare);
 	if (p->reset)
 		gpiod_set_value_cansleep(p->reset, 1);
 	if (p->enable_gpio)
 		gpiod_set_value_cansleep(p->enable_gpio, 0);
 
 	regulator_disable(p->supply);
-
-	if (p->desc->delay.unprepare)
-		msleep(p->desc->delay.unprepare);
 
 	p->prepared = false;
 
@@ -340,7 +341,6 @@ static int panel_simple_prepare(struct drm_panel *panel)
 		gpiod_set_value_cansleep(p->enable_gpio, 1);
 	if (p->reset)
 		gpiod_set_value_cansleep(p->reset, 0);
-
 
 	if (p->desc->delay.prepare)
 		msleep(p->desc->delay.prepare);
@@ -516,6 +516,7 @@ static int panel_simple_probe(struct device *dev, const struct panel_desc *desc)
 			ds->bus_flags |= DRM_BUS_FLAG_PIXDATA_NEGEDGE;
 		if (vm.flags & DISPLAY_FLAGS_PIXDATA_POSEDGE)
 			ds->bus_flags |= DRM_BUS_FLAG_PIXDATA_POSEDGE;
+		dev_info(dev, "vm.flags=%x bus_flags=%x flags=%x\n", vm.flags, ds->bus_flags, dm->flags);
 
 		err = of_property_read_string(np, "bus-format", &bf);
 		if (err) {
@@ -2694,6 +2695,12 @@ static int panel_simple_dsi_probe(struct mipi_dsi_device *dsi)
 			dsi->mode_flags |= MIPI_DSI_MODE_VIDEO_HSE;
 		if (of_property_read_bool(np, "mode-video-sync-pulse"))
 			dsi->mode_flags |= MIPI_DSI_MODE_VIDEO_SYNC_PULSE;
+		if (of_property_read_bool(np, "mode-video-hfp-disable"))
+			dsi->mode_flags |= MIPI_DSI_MODE_VIDEO_HFP;
+		if (of_property_read_bool(np, "mode-video-hbp-disable"))
+			dsi->mode_flags |= MIPI_DSI_MODE_VIDEO_HBP;
+		if (of_property_read_bool(np, "mode-video-hsa-disable"))
+			dsi->mode_flags |= MIPI_DSI_MODE_VIDEO_HSA;
 	}
 	err = panel_simple_probe(&dsi->dev, pd);
 	if (err < 0)
