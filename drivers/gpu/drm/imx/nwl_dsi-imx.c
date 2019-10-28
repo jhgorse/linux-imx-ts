@@ -13,6 +13,8 @@
  * GNU General Public License for more details.
  */
 
+#define DEBUG
+
 #include <drm/bridge/nwl_dsi.h>
 #include <drm/drmP.h>
 #include <drm/drm_atomic_helper.h>
@@ -62,9 +64,10 @@
 
 /* Possible valid PHY reference clock rates*/
 u32 phyref_rates[] = {
-	24000000,
-	25000000,
-	27000000,
+	26155800
+//	24000000,
+//	25000000,
+//	27000000,
 };
 
 struct imx_mipi_dsi {

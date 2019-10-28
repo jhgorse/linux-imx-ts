@@ -327,6 +327,7 @@ static int panel_simple_unprepare(struct drm_panel *panel)
 static int panel_simple_prepare(struct drm_panel *panel)
 {
 	struct panel_simple *p = to_panel_simple(panel);
+	struct mipi_dsi_device *dsi;
 	int err;
 
 	if (p->prepared)
@@ -340,14 +341,27 @@ static int panel_simple_prepare(struct drm_panel *panel)
 
 	if (p->enable_gpio)
 		gpiod_set_value_cansleep(p->enable_gpio, 1);
-	if (p->reset)
-		gpiod_set_value_cansleep(p->reset, 0);
 
+	if (p->reset) {
+		// gjm: reset sequence specific to one panel; move to dts later
+		pr_info("gjm: simple_panel reset -> 0\n");
+		gpiod_set_value(p->reset, 1);
+		usleep_range(1000, 5000);
+		pr_info("gjm: simple_panel reset -> 1\n");
+		gpiod_set_value(p->reset, 0);
+		msleep(130);
+		pr_info("gjm: simple_panel ready to send commands\n");
+	}
 
 	if (p->desc->delay.prepare)
 		msleep(p->desc->delay.prepare);
 
+	dsi = container_of(p->base.dev, struct mipi_dsi_device, dev);
+	mipi_dsi_dcs_enter_sleep_mode(dsi);
+	mdelay(10);
+
 	err = send_mipi_cmd_list(p, &p->mipi_cmds_init);
+	pr_info("gjm: send_mipi_cmd_list() -> %d", err);
 	if (err) {
 		regulator_disable(p->supply);
 		return err;
@@ -359,11 +373,19 @@ static int panel_simple_prepare(struct drm_panel *panel)
 
 static int panel_simple_enable(struct drm_panel *panel)
 {
+	struct mipi_dsi_device *dsi;
 	struct panel_simple *p = to_panel_simple(panel);
 	int ret;
 
 	if (p->enabled)
 		return 0;
+
+	dsi = container_of(p->base.dev, struct mipi_dsi_device, dev);
+	mipi_dsi_dcs_set_pixel_format(dsi, 0x77);
+	mipi_dsi_dcs_set_tear_on(dsi, MIPI_DSI_DCS_TEAR_MODE_VHBLANK);
+	mipi_dsi_dcs_exit_sleep_mode(dsi);
+	msleep(120);
+	mipi_dsi_dcs_set_display_on(dsi);
 
 	ret = send_mipi_cmd_list(p, &p->mipi_cmds_enable);
 	if (ret < 0)

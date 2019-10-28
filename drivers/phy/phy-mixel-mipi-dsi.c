@@ -114,53 +114,59 @@ int mixel_phy_mipi_set_phy_speed(struct phy *phy,
 				 bool best_match)
 {
 	struct mixel_mipi_phy_priv *priv = dev_get_drvdata(phy->dev.parent);
-	u32 div_rate;
-	u32 numerator = 0;
-	u32 denominator = 1;
-
-	if (bit_clk > DATA_RATE_MAX_SPEED || bit_clk < DATA_RATE_MIN_SPEED)
-		return -EINVAL;
-
-	/* simulated fixed point with 3 decimals */
-	div_rate = (bit_clk * 1000) / ref_clk;
-
-	while (denominator <= 256) {
-		if (div_rate % 1000 == 0)
-			numerator = div_rate / 1000;
-		if (numerator > 15)
-			break;
-		denominator = denominator << 1;
-		div_rate = div_rate << 1;
-	}
-
-	/* CM ranges between 16 and 255 */
-	/* CN ranges between 1 and 32 */
-	/* CO is power of 2: 1, 2, 4, 8 */
-	if (best_match && numerator < 16)
-		numerator = div_rate / 1000;
-
-	if (best_match && numerator > 255) {
-		while (numerator > 255 && denominator > 1) {
-			numerator = DIV_ROUND_UP(numerator, 2);
-			denominator = denominator >> 1;
-		}
-	}
-
-	if (numerator < 16 || numerator > 255)
-		return -EINVAL;
-
-	if (best_match)
-		numerator = DIV_ROUND_UP(numerator, denominator) * denominator;
-
-	priv->divider.cn = 1;
-	if (denominator > 8) {
-		priv->divider.cn = denominator >> 3;
-		denominator = 8;
-	}
-	priv->divider.co = denominator;
-	priv->divider.cm = numerator;
-
+//	u32 div_rate;
+//	u32 numerator = 0;
+//	u32 denominator = 1;
+//
+//	if (bit_clk > DATA_RATE_MAX_SPEED || bit_clk < DATA_RATE_MIN_SPEED)
+//		return -EINVAL;
+//
+//	/* simulated fixed point with 3 decimals */
+//	div_rate = (bit_clk * 1000) / ref_clk;
+//
+//	while (denominator <= 256) {
+//		if (div_rate % 1000 == 0)
+//			numerator = div_rate / 1000;
+//		if (numerator > 15)
+//			break;
+//		denominator = denominator << 1;
+//		div_rate = div_rate << 1;
+//	}
+//
+//	/* CM ranges between 16 and 255 */
+//	/* CN ranges between 1 and 32 */
+//	/* CO is power of 2: 1, 2, 4, 8 */
+//	if (best_match && numerator < 16)
+//		numerator = div_rate / 1000;
+//
+//	if (best_match && numerator > 255) {
+//		while (numerator > 255 && denominator > 1) {
+//			numerator = DIV_ROUND_UP(numerator, 2);
+//			denominator = denominator >> 1;
+//		}
+//	}
+//
+//	if (numerator < 16 || numerator > 255)
+//		return -EINVAL;
+//
+//	if (best_match)
+//		numerator = DIV_ROUND_UP(numerator, denominator) * denominator;
+//
+//	priv->divider.cn = 1;
+//	if (denominator > 8) {
+//		priv->divider.cn = denominator >> 3;
+//		denominator = 8;
+//	}
+//	priv->divider.co = denominator;
+//	priv->divider.cm = numerator;
+//
+	// gjm: hardcoded configuration for our 69.7 MHz clock, this varies with
+	// the dcss clock frequency and the selected phy ref frequency, but it
+	// should be around +/- 1 MHz
 	priv->data_rate = bit_clk;
+	priv->divider.cn = 1;
+	priv->divider.cm = 16;
+	priv->divider.co = 1;
 
 	return 0;
 }
@@ -217,7 +223,8 @@ static void mixel_phy_set_prg_regs(struct phy *phy)
 	 * this gives 55-50 ns.
 	 * The specification is 38 to 95 ns.
 	 */
-	phy_write(phy, 0x00, DPHY_MC_PRG_HS_PREPARE);
+	// gjm: 75 ns
+	phy_write(phy, 0x01, DPHY_MC_PRG_HS_PREPARE);
 
 	/* PRG_HS_PREPARE
 	 * for  PRG_HS_PREPARE = 00, THS-PREPARE = 1   * TxClkEsc Period
@@ -229,14 +236,16 @@ static void mixel_phy_set_prg_regs(struct phy *phy)
 	 *	     Min (40ns + 4*UI)
 	 *           Max 85ns +6*UI
 	 */
-	if (priv->data_rate <= MBPS(61))
-		phy_write(phy, 0x03, DPHY_M_PRG_HS_PREPARE);
-	else if (priv->data_rate <= MBPS(90))
-		phy_write(phy, 0x02, DPHY_M_PRG_HS_PREPARE);
-	else if (priv->data_rate <= MBPS(500))
-		phy_write(phy, 0x01, DPHY_M_PRG_HS_PREPARE);
-	else
-		phy_write(phy, 0x00, DPHY_M_PRG_HS_PREPARE);
+//	if (priv->data_rate <= MBPS(61))
+//		phy_write(phy, 0x03, DPHY_M_PRG_HS_PREPARE);
+//	else if (priv->data_rate <= MBPS(90))
+//		phy_write(phy, 0x02, DPHY_M_PRG_HS_PREPARE);
+//	else if (priv->data_rate <= MBPS(500))
+//		phy_write(phy, 0x01, DPHY_M_PRG_HS_PREPARE);
+//	else
+//		phy_write(phy, 0x00, DPHY_M_PRG_HS_PREPARE);
+	// gjm: 75 ns as well
+	phy_write(phy, 0x01, DPHY_M_PRG_HS_PREPARE);
 
 	/* MC_PRG_HS_ZERO
 	 *
