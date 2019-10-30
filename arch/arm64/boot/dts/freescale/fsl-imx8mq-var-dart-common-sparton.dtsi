@@ -672,9 +672,16 @@
 			DCS_S1P(0x35,0x00)
 		>;
 		mipi-cmds-enable = /bits/ 8 <
+#define NT35521Z_SELF_TEST
+#ifdef NT35521Z_SELF_TEST
+			DCS_L5P(0xF0,0x55,0xAA,0x52,0x08,0x00)
+			DCS_S1P(0xEF,0x01)
+			DCS_L4P(0xEE,0x87,0x78,0x02,0x40)
+#else /* NT35521Z_SELF_TEST */
 			DCS_S0P(0x11)
-			DELAY(130)
+			DELAY(150)
 			DCS_S0P(0x29)
+#endif /* NT35521Z_SELF_TEST */
 		>;
 #endif
 	};
@@ -830,11 +837,7 @@
 	status = "disabled";
 };
 
-&wdog3{
-	status = "disabled";
-};
-
-&sai3{
+&wdog3 {
 	status = "disabled";
 };
 
@@ -948,9 +951,22 @@
 		bus-format = "rgb888";
 		dsi-format = "rgb888";
 		dsi-lanes = <4>;
+		delay-unprepare = <10>;
+		delay-prepare = <150>;
+		delay-enable = <150>;
+		delay-disable = <150>;
 		mipi-cmds = <&mipi_cmds_nt35521z>;
+		/*bridge-de-active = <1>;*/
+		/*bridge-sync-active = <1>;*/
+		/*mode-clock-non-contiguous;*/
+		/*mode-skip-eot;*/
 		mode-video;
 		mode-video-burst;
+		/*mode-video-hse;*/
+		/*mode-video-sync-pulse;*/
+		/*mode-video-hfp-disable;*/
+		/*mode-video-hbp-disable;*/
+		/*mode-video-hsa-disable;*/
 		panel-width-mm = <62>;
 		panel-height-mm = <110>;
 		bridge-de-active = <1>;
