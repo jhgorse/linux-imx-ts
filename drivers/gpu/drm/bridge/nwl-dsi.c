@@ -312,6 +312,8 @@ static void nwl_dsi_config_host(struct nwl_mipi_dsi *dsi)
 	if (dsi->lanes < 1 || dsi->lanes > 4)
 		return;
 
+	pr_info("gjm: nwl_dsi_config_host()\n");
+
 	nwl_dsi_write(dsi, CFG_NUM_LANES, dsi->lanes - 1);
 
 	if (dsi->dsi_mode_flags & MIPI_DSI_CLOCK_NON_CONTINUOUS) {
@@ -342,6 +344,8 @@ static void nwl_dsi_config_dpi(struct nwl_mipi_dsi *dsi)
 			nwl_dsi_get_dpi_interface_color_coding(dsi->format);
 	bool burst_mode;
 
+	pr_info("gjm: nwl_dsi_config_dpi()\n");
+
 	nwl_dsi_write(dsi, INTERFACE_COLOR_CODING, color_coding);
 	nwl_dsi_write(dsi, PIXEL_FORMAT, pixel_format);
 	DRM_DEV_DEBUG_DRIVER(dev, "DSI format is: %d (CC=%d, PF=%d)\n",
@@ -358,7 +362,7 @@ static void nwl_dsi_config_dpi(struct nwl_mipi_dsi *dsi)
 		nwl_dsi_write(dsi, VIDEO_MODE, 0x2);
 		nwl_dsi_write(dsi, PIXEL_FIFO_SEND_LEVEL, 256);
 	} else {
-		nwl_dsi_write(dsi, VIDEO_MODE, 0x0);
+		nwl_dsi_write(dsi, VIDEO_MODE, 0x1);
 		nwl_dsi_write(dsi, PIXEL_FIFO_SEND_LEVEL, vm->hactive);
 	}
 
@@ -387,7 +391,7 @@ static void nwl_dsi_enable_clocks(struct nwl_mipi_dsi *dsi, u32 clks)
 		clk_prepare_enable(dsi->phy_ref.clk);
 		dsi->phy_ref.enabled = true;
 		rate = clk_get_rate(dsi->phy_ref.clk);
-		DRM_DEV_DEBUG_DRIVER(dev,
+		pr_info("gjm: "
 				"Enabled phy_ref clk (rate=%lu)\n", rate);
 	}
 
@@ -403,7 +407,7 @@ static void nwl_dsi_enable_clocks(struct nwl_mipi_dsi *dsi, u32 clks)
 		clk_prepare_enable(dsi->tx_esc.clk);
 		dsi->tx_esc.enabled = true;
 		rate = clk_get_rate(dsi->tx_esc.clk);
-		DRM_DEV_DEBUG_DRIVER(dev,
+		pr_info("gjm: "
 				"Enabled tx_esc clk (rate=%lu)\n", rate);
 	}
 }
@@ -547,52 +551,52 @@ static int nwl_dsi_host_detach(struct mipi_dsi_host *host,
 
 static void nwl_dsi_print_error(struct device *dev, u16 error)
 {
-	DRM_DEV_DEBUG_DRIVER(dev, "DSI Error Register (detailed report):\n");
+	pr_info("DSI Error Register (detailed report):\n");
 	if (error & BIT(0))
-		DRM_DEV_DEBUG_DRIVER(dev,
+		pr_info(
 			"SoT Error\n");
 	if (error & BIT(1))
-		DRM_DEV_DEBUG_DRIVER(dev,
+		pr_info(
 			"SoT Sync Error\n");
 	if (error & BIT(2))
-		DRM_DEV_DEBUG_DRIVER(dev,
+		pr_info(
 			"EoT Sync Error\n");
 	if (error & BIT(3))
-		DRM_DEV_DEBUG_DRIVER(dev,
+		pr_info(
 			"Escape Mode Entry Command Error\n");
 	if (error & BIT(4))
-		DRM_DEV_DEBUG_DRIVER(dev,
+		pr_info(
 			"Low-Power Transmit Sync Error\n");
 	if (error & BIT(5))
-		DRM_DEV_DEBUG_DRIVER(dev,
+		pr_info(
 			"Peripheral Timeout Error\n");
 	if (error & BIT(6))
-		DRM_DEV_DEBUG_DRIVER(dev,
+		pr_info(
 			"False Control Error\n");
 	if (error & BIT(7))
-		DRM_DEV_DEBUG_DRIVER(dev,
+		pr_info(
 			"Contention Detected\n");
 	if (error & BIT(8))
-		DRM_DEV_DEBUG_DRIVER(dev,
+		pr_info(
 			"ECC Error, single-bit (detected and corrected)\n");
 	if (error & BIT(9))
-		DRM_DEV_DEBUG_DRIVER(dev,
+		pr_info(
 			"ECC Error, multi-bit (detected, not corrected)\n");
 	if (error & BIT(10))
-		DRM_DEV_DEBUG_DRIVER(dev,
+		pr_info(
 			"Checksum Error (long packet only)\n");
 	if (error & BIT(11))
-		DRM_DEV_DEBUG_DRIVER(dev,
+		pr_info(
 			"DSI Data Type Not Recognized\n");
 	if (error & BIT(12))
-		DRM_DEV_DEBUG_DRIVER(dev,
+		pr_info(
 			"DSI VC ID Invalid\n");
 	if (error & BIT(13))
-		DRM_DEV_DEBUG_DRIVER(dev,
+		pr_info(
 			"Invalid Transmission Length\n");
 	/* BIT(14) is reserved */
 	if (error & BIT(15))
-		DRM_DEV_DEBUG_DRIVER(dev,
+		pr_info(
 			"DSI Protocol Violation\n");
 }
 
@@ -1111,6 +1115,8 @@ static int nwl_dsi_probe(struct platform_device *pdev)
 	struct clk *clk;
 	struct resource *res;
 	int ret;
+
+	dev_info(dev, "nwl_dsi_probe start\n");
 
 	dsi = devm_kzalloc(dev, sizeof(*dsi), GFP_KERNEL);
 	if (!dsi)
