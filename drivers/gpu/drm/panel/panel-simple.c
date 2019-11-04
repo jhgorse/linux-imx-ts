@@ -382,11 +382,11 @@ static int panel_simple_enable(struct drm_panel *panel)
 		return 0;
 
 	dsi = container_of(p->base.dev, struct mipi_dsi_device, dev);
-	mipi_dsi_dcs_set_pixel_format(dsi, 0x77);
-	mipi_dsi_dcs_set_tear_on(dsi, MIPI_DSI_DCS_TEAR_MODE_VHBLANK);
-	mipi_dsi_dcs_exit_sleep_mode(dsi);
-	msleep(120);
-	mipi_dsi_dcs_set_display_on(dsi);
+//	mipi_dsi_dcs_set_pixel_format(dsi, 0x77);
+//	mipi_dsi_dcs_set_tear_on(dsi, MIPI_DSI_DCS_TEAR_MODE_VHBLANK);
+//	mipi_dsi_dcs_exit_sleep_mode(dsi);
+//	msleep(120);
+//	mipi_dsi_dcs_set_display_on(dsi);
 
 	ret = send_mipi_cmd_list(p, &p->mipi_cmds_enable);
 	if (ret < 0)
