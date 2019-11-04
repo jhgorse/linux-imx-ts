@@ -385,7 +385,7 @@ static int panel_simple_enable(struct drm_panel *panel)
 //	mipi_dsi_dcs_set_pixel_format(dsi, 0x77);
 //	mipi_dsi_dcs_set_tear_on(dsi, MIPI_DSI_DCS_TEAR_MODE_VHBLANK);
 //	mipi_dsi_dcs_exit_sleep_mode(dsi);
-//	msleep(120);
+//	msleep(150);
 //	mipi_dsi_dcs_set_display_on(dsi);
 
 	ret = send_mipi_cmd_list(p, &p->mipi_cmds_enable);
