@@ -621,6 +621,8 @@ static bool nwl_dsi_read_packet(struct nwl_mipi_dsi *dsi, u32 status)
 		channel	= RX_VC(val);
 		data_type = RX_DT(val);
 
+		pr_info("dsi read: 0x%x: wc=%d, data_type=%d\n", val, word_count, data_type);
+
 		if (channel != xfer->msg->channel) {
 			DRM_DEV_ERROR(dev,
 				"[%02X] Channel missmatch (%u != %u)\n",

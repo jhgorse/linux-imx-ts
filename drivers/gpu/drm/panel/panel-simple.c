@@ -110,12 +110,81 @@ static inline struct panel_simple *to_panel_simple(struct drm_panel *panel)
 	return container_of(panel, struct panel_simple, base);
 }
 
+static void print_mipi_read(int generic, u8 reg, u8 *data, int count) {
+	char buffer[128];
+	char strval[6];
+	int i;
+
+	memset(buffer, 0, sizeof(buffer));
+	for (i = 0; i < count; ++i) {
+		scnprintf(strval, sizeof(strval), "0x%02x ", data[i]);
+		strncat(buffer, strval, sizeof(strval));
+	}
+	pr_debug("Read (generic? %d): 0x%02x -> %s\n", generic, reg, buffer);
+}
+
+static int read_device_regs(struct panel_simple *panel, int generic) {
+	struct mipi_dsi_device *dsi;
+	u8 data[18];
+	int ret, lastpage, i;
+	struct mipi_reglist {
+		u8 page;
+		u8 cmd[2];
+		u8 len;
+	} regs[] = {
+		{0, {0xb1, 0x00}, 2},
+		{0, {0xb5, 0x00}, 2},
+		{0, {0xbc, 0x00}, 1},
+		{0, {0xbd, 0x00}, 5},
+		{0, {0xc8, 0x00}, 1},
+		{1, {0xb3, 0x00}, 1},
+		{1, {0xb4, 0x00}, 1},
+		{1, {0xbb, 0x00}, 1},
+		{1, {0xbc, 0x00}, 1},
+		{1, {0xbd, 0x00}, 1},
+		{1, {0xbe, 0x00}, 1},
+	};
+	int regcount = sizeof(regs) / sizeof(regs[0]);
+
+	pr_info("gjm: In read_device_regs");
+
+	dsi = container_of(panel->base.dev, struct mipi_dsi_device, dev);
+	dsi->mode_flags |= MIPI_DSI_MODE_LPM;
+
+	lastpage = -1;
+	for (i = 0; i < regcount; ++i) {
+		if (regs[i].page != lastpage) {
+			pr_info("gjm: change to mfg command page %d\n", regs[i].page);
+			mipi_dsi_dcs_write_buffer(dsi,
+				(u8[]){0xf0, 0x55, 0xaa, 0x52, 0x08, regs[i].page},
+				6);
+			lastpage = regs[i].page;
+		}
+
+		// DCS requires one parameter, generic requires 2ish
+		if (generic) {
+			ret = mipi_dsi_generic_read(dsi, regs[i].cmd, 2, data, sizeof(data));
+			if (ret < 0)
+				return ret;
+		}
+		else {
+			ret = mipi_dsi_dcs_read(dsi, regs[i].cmd[0], data, sizeof(data));
+			if (ret < 0)
+				return ret;
+		}
+
+		print_mipi_read(generic, regs[i].cmd[0], data, regs[i].len);
+	}
+
+	return 0;
+}
+
 static int send_mipi_cmd_list(struct panel_simple *panel, struct mipi_cmd *mc)
 {
 	struct mipi_dsi_device *dsi;
 	const u8 *cmd = mc->mipi_cmds;
 	unsigned length = mc->length;
-	u8 data[4];
+	u8 data[18];
 	unsigned len;
 	int ret;
 	int generic;
@@ -136,10 +205,30 @@ static int send_mipi_cmd_list(struct panel_simple *panel, struct mipi_cmd *mc)
 
 		ret = 0;
 		if (len < S_DELAY) {
-			if (generic)
+			memset(data, 0, sizeof(data));
+			if (generic) {
 				ret = mipi_dsi_generic_write(dsi, cmd, len);
-			else
+				if (ret < 0) {
+					dev_err(&dsi->dev,
+						"Failed to send generic write (%d), (%d)%02x\n",
+						ret, len, cmd[0]);
+				}
+				else if (len < sizeof(data)) {
+					mipi_dsi_generic_read(dsi, cmd, 2, data, len);
+				}
+			}
+			else {
 				ret = mipi_dsi_dcs_write_buffer(dsi, cmd, len);
+				if (ret < 0) {
+					dev_err(&dsi->dev,
+						"Failed to send DCS write (%d), (%d)%02x\n",
+						ret, len, cmd[0]);
+				}
+				else if (len < sizeof(data)) {
+					mipi_dsi_dcs_read(dsi, cmd[0], data, 17);
+				}
+			}
+			print_mipi_read(generic, cmd[0], data, len);
 		} else if (len == S_MRPS) {
 				ret = mipi_dsi_set_maximum_return_packet_size(
 					dsi, cmd[0]);
@@ -347,7 +436,7 @@ static int panel_simple_prepare(struct drm_panel *panel)
 		// gjm: reset sequence specific to one panel; move to dts later
 		pr_info("gjm: simple_panel reset -> 0\n");
 		gpiod_set_value(p->reset, 1);
-		usleep_range(1000, 5000);
+		usleep_range(5000, 10000);
 		pr_info("gjm: simple_panel reset -> 1\n");
 		gpiod_set_value(p->reset, 0);
 		msleep(130);
@@ -357,9 +446,14 @@ static int panel_simple_prepare(struct drm_panel *panel)
 	if (p->desc->delay.prepare)
 		msleep(p->desc->delay.prepare);
 
-	dsi = container_of(p->base.dev, struct mipi_dsi_device, dev);
-	mipi_dsi_dcs_enter_sleep_mode(dsi);
-	mdelay(10);
+//	dsi = container_of(p->base.dev, struct mipi_dsi_device, dev);
+//	mipi_dsi_dcs_enter_sleep_mode(dsi);
+//	mdelay(10);
+
+	// Read all registers on the device before programming
+	err = read_device_regs(p, 1);
+	if (err)
+		return err;
 
 	err = send_mipi_cmd_list(p, &p->mipi_cmds_init);
 	pr_info("gjm: send_mipi_cmd_list() -> %d", err);
@@ -368,6 +462,11 @@ static int panel_simple_prepare(struct drm_panel *panel)
 		return err;
 	}
 	p->prepared = true;
+
+	// And again after
+	err = read_device_regs(p, 1);
+	if (err)
+		return err;
 
 	return 0;
 }
