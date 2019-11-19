@@ -443,6 +443,7 @@ static void nwl_dsi_init_interrupts(struct nwl_mipi_dsi *dsi)
 	nwl_dsi_write(dsi, IRQ_MASK2, 0x7);
 
 	irq_enable = ~(u32)(TX_PKT_DONE_MASK |
+			RX_PKT_PAYLOAD_DATA_RCVD_MASK |
 			RX_PKT_HDR_RCVD_MASK);
 
 	nwl_dsi_write(dsi, IRQ_MASK, irq_enable);
@@ -621,8 +622,6 @@ static bool nwl_dsi_read_packet(struct nwl_mipi_dsi *dsi, u32 status)
 		channel	= RX_VC(val);
 		data_type = RX_DT(val);
 
-		pr_info("dsi read: 0x%x: wc=%d, data_type=%d\n", val, word_count, data_type);
-
 		if (channel != xfer->msg->channel) {
 			DRM_DEV_ERROR(dev,
 				"[%02X] Channel missmatch (%u != %u)\n",
@@ -726,8 +725,9 @@ static void nwl_dsi_finish_transmission(struct nwl_mipi_dsi *dsi, u32 status)
 	if (xfer->direction == DSI_PACKET_SEND && status & TX_PKT_DONE) {
 		xfer->status = xfer->tx_len;
 		end_packet = true;
-	} else if (status & DPHY_DIRECTION && status & RX_PKT_HDR_RCVD)
+	} else if ((status & RX_PKT_HDR_RCVD) || (status & RX_PKT_PAYLOAD_DATA_RCVD)) {
 		end_packet = nwl_dsi_read_packet(dsi, status);
+	}
 
 	if (end_packet)
 		complete(&xfer->completed);
@@ -1038,6 +1038,7 @@ static void nwl_dsi_bridge_enable(struct drm_bridge *bridge)
 	}
 
 	nwl_dsi_init_interrupts(dsi);
+	nwl_dsi_config_host(dsi);
 	nwl_dsi_config_dpi(dsi);
 
 	if (dsi->panel && drm_panel_prepare(dsi->panel)) {
@@ -1045,7 +1046,8 @@ static void nwl_dsi_bridge_enable(struct drm_bridge *bridge)
 		goto prepare_err;
 	}
 
-	nwl_dsi_config_host(dsi);
+//	nwl_dsi_config_host(dsi);
+//	nwl_dsi_config_dpi(dsi);
 
 	if (dsi->panel && drm_panel_enable(dsi->panel)) {
 		DRM_DEV_ERROR(dev, "Failed to enable panel\n");

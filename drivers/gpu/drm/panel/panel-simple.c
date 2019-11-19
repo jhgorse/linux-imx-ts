@@ -228,7 +228,6 @@ static int send_mipi_cmd_list(struct panel_simple *panel, struct mipi_cmd *mc)
 					mipi_dsi_dcs_read(dsi, cmd[0], data, 17);
 				}
 			}
-			print_mipi_read(generic, cmd[0], data, len);
 		} else if (len == S_MRPS) {
 				ret = mipi_dsi_set_maximum_return_packet_size(
 					dsi, cmd[0]);
@@ -295,6 +294,7 @@ static int send_mipi_cmd_list(struct panel_simple *panel, struct mipi_cmd *mc)
 				pr_debug("Sent DCS (%d), (%d)%02x %02x\n",
 					ret, len, cmd[0], cmd[1]);
 			}
+			print_mipi_read(generic, cmd[0], data, len-1);
 		}
 		if (length < len) {
 			dev_err(&dsi->dev, "Unexpected end of data\n");
