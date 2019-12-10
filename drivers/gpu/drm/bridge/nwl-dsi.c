@@ -16,6 +16,10 @@
 #define DEBUG
 
 #include <asm/unaligned.h>
+#include <linux/gpio/consumer.h>
+#include <linux/mfd/syscon.h>
+#include <linux/mfd/syscon/imx8mq-iomuxc-gpr.h>
+#include <linux/busfreq-imx.h>
 #include <drm/bridge/nwl_dsi.h>
 #include <drm/drmP.h>
 #include <drm/drm_atomic_helper.h>
@@ -34,8 +38,19 @@
 #include <linux/spinlock.h>
 #include <video/mipi_display.h>
 #include <video/videomode.h>
+#include <drm/drm_mipi_dsi.h>
+#include <linux/phy/phy-mixel-mipi-dsi.h>
+#include <linux/regmap.h>
 
 #define MIPI_FIFO_TIMEOUT msecs_to_jiffies(500)
+
+/* 8MQ SRC specific registers */
+#define SRC_MIPIPHY_RCR				0x28
+#define RESET_BYTE_N				BIT(1)
+#define RESET_N					BIT(2)
+#define DPI_RESET_N				BIT(3)
+#define ESC_RESET_N				BIT(4)
+#define PCLK_RESET_N				BIT(5)
 
 /* DSI HOST registers */
 #define CFG_NUM_LANES			0x0
@@ -1112,6 +1127,213 @@ static const struct drm_bridge_funcs nwl_dsi_bridge_funcs = {
 	.detach = nwl_dsi_bridge_detach,
 };
 
+static int nwl_dsi_init_clocks(struct nwl_mipi_dsi *dsi) {
+	struct device *dev = dsi->dev;
+	struct clk *clk;
+	int ret;
+	int i;
+
+	struct clks_t {
+		const char *id;
+	} clks[] = {
+		{"apb"},
+		{"axi"},
+		{"pix_div"},
+		{"pix_out"},
+		{"rtrm"},
+		{"dtrc"},
+		{"core"},
+		{"phy_ref"}
+	};
+
+	// set the pix_div clk to the pixel clock value
+	clk = devm_clk_get(dev, "pix_div");
+	clk_set_rate(clk, 69500000);
+	devm_clk_put(dev, clk);
+
+	for (i = 0; i < sizeof(clks)/sizeof(struct clks_t); ++i) {
+		clk = devm_clk_get(dev, clks[i].id);
+		if (IS_ERR(clk)) {
+			ret = PTR_ERR(clk);
+			dev_err(dev, "Failed to get %s clock (%d)\n", clks[i].id, ret);
+			return ret;
+		}
+
+		clk_prepare_enable(clk);
+		pr_info("gjm: clock %s at %lu Hz", clks[i].id, clk_get_rate(clk));
+		devm_clk_put(dev, clk);
+	}
+	return 0;
+}
+
+/**
+ * try to initialize enough of the dphy to send commands without video data
+ */
+static int nwl_dsi_write_early(struct nwl_mipi_dsi *dsi) {
+	struct device *dev = dsi->dev;
+	struct device_node *np = dev->of_node;
+	struct gpio_desc *reset;
+	struct regmap *src;
+	struct regmap *mux_sel;
+	struct mipi_dsi_msg msg;
+	u8 txbuf[10] = {0};
+	int ret;
+
+	pr_info("gjm: nwl_dsi_write_early start\n");
+
+	pm_runtime_get_sync(dev);
+
+	ret = devm_request_irq(dev, dsi->irq,
+			       nwl_dsi_irq_handler, 0, IRQ_NAME, dsi);
+	if (ret < 0) {
+		DRM_DEV_ERROR(dev, "Failed to request IRQ: %d (%d)\n",
+			      dsi->irq, ret);
+		return ret;
+	}
+
+	pr_info("gjm: get reset gpio\n");
+
+	// Normal panel reset first
+	reset = devm_gpiod_get_optional(dev, "reset", GPIOD_OUT_HIGH);
+	gpiod_set_value(reset, 1);
+	usleep_range(5000, 10000);
+	gpiod_set_value(reset, 0);
+	msleep(130);
+
+	// nwl_dsi-imx of_parse logic
+	mux_sel = syscon_regmap_lookup_by_phandle(np, "mux-sel");
+	if (IS_ERR(mux_sel)) {
+		ret = PTR_ERR(mux_sel);
+		dev_err(dev, "Failed to get GPR regmap (%d)\n", ret);
+		return ret;
+	}
+
+	// 0 = lcdif, imx8mq gpr13 mipi mux sel = dcss
+	// neither peripheral is initialized, however
+	regmap_update_bits(mux_sel,
+		   IOMUXC_GPR13,
+		   IMX8MQ_GPR13_MIPI_MUX_SEL,
+		   0);
+//		   IMX8MQ_GPR13_MIPI_MUX_SEL);
+
+	// nwl_dsi_bridge_attach logic
+	pr_info("gjm: register dsi host\n");
+	dsi->host.ops = &nwl_dsi_host_ops;
+	dsi->host.dev = dev;
+	ret = mipi_dsi_host_register(&dsi->host);
+	if (ret < 0) {
+		dev_err(dev, "failed to register DSI host (%d)\n", ret);
+		return ret;
+	}
+
+	// imx_nwl_dsi_enable logic
+	pr_info("gjm: set phy speed\n");
+	mixel_phy_mipi_set_phy_speed(dsi->phy, 417391312, 0, false);
+	request_bus_freq(BUS_FREQ_HIGH);
+	pr_info("gjm: check phy and core clocks\n");
+	nwl_dsi_init_clocks(dsi);
+
+	msleep(100);
+
+	// imx8mq_dsi_poweron
+	pr_info("gjm: disable dphy reset in syscon\n");
+	src = syscon_regmap_lookup_by_phandle(np, "src");
+	if (IS_ERR(src)) {
+		ret = PTR_ERR(src);
+		dev_err(dev, "Failed to get SRC regmap (%d)\n", ret);
+		return ret;
+	}
+	regmap_update_bits(src, SRC_MIPIPHY_RCR,
+			   PCLK_RESET_N, PCLK_RESET_N);
+	regmap_update_bits(src, SRC_MIPIPHY_RCR,
+			   ESC_RESET_N, ESC_RESET_N);
+	regmap_update_bits(src, SRC_MIPIPHY_RCR,
+			   RESET_BYTE_N, RESET_BYTE_N);
+	regmap_update_bits(src, SRC_MIPIPHY_RCR,
+			   DPI_RESET_N, DPI_RESET_N);
+
+	// nwl_dsi_bridge_enable logic
+	pr_info("gjm: enable clocks.\n");
+	nwl_dsi_enable_clocks(dsi, CLK_PHY_REF | CLK_TX_ESC | CLK_RX_ESC);
+
+	pr_info("gjm: init phy\n");
+	phy_init(dsi->phy);
+
+	pr_info("gjm: phy_power_on\n");
+	ret = phy_power_on(dsi->phy);
+	if (ret < 0) {
+		DRM_DEV_ERROR(dev, "Failed to power on DPHY (%d)\n", ret);
+		goto phy_err;
+	}
+
+	pr_info("gjm: set dsi interrupts\n");
+	nwl_dsi_init_interrupts(dsi);
+
+	nwl_dsi_config_host(dsi);
+//	nwl_dsi_config_dpi(dsi);
+
+	msg.type = MIPI_DSI_DCS_LONG_WRITE;
+	msg.channel = 0;
+	msg.tx_buf = txbuf;
+	msg.flags = MIPI_DSI_MSG_USE_LPM;
+
+	// First command, enter mfg page 0
+	txbuf[0] = 0xf0;
+	txbuf[1] = 0x55;
+	txbuf[2] = 0xaa;
+	txbuf[3] = 0x52;
+	txbuf[4] = 0x08;
+	txbuf[5] = 0x00;
+	msg.tx_len = 6;
+	pr_info("gjm: write command 0\n");
+	ret = nwl_dsi_host_transfer(&dsi->host, &msg);
+	if (ret < 0) {
+		pr_info("nwl_dsi_host_transfer failed: %d\n", ret);
+		goto phy_err;
+	}
+
+	// Second command, configure bist options
+	txbuf[0] = 0xef;
+	txbuf[1] = 0x07;
+	txbuf[2] = 0xff;
+	txbuf[3] = 0xff;
+	msg.tx_len = 4;
+	pr_info("gjm: write command 1\n");
+	nwl_dsi_host_transfer(&dsi->host, &msg);
+	if (ret < 0) {
+		pr_info("nwl_dsi_host_transfer failed: %d\n", ret);
+		goto phy_err;
+	}
+
+	// Third command, enable bist
+	txbuf[0] = 0xee;
+	txbuf[1] = 0x87;
+	txbuf[2] = 0x78;
+	txbuf[3] = 0x02;
+	txbuf[4] = 0x40;
+	msg.tx_len = 5;
+	pr_info("gjm: write command 2\n");
+	nwl_dsi_host_transfer(&dsi->host, &msg);
+	if (ret < 0) {
+		pr_info("nwl_dsi_host_transfer failed: %d\n", ret);
+		goto phy_err;
+	}
+
+	ret = 0;
+	goto no_err;
+
+phy_err:
+	phy_exit(dsi->phy);
+	nwl_dsi_disable_clocks(dsi, CLK_PHY_REF | CLK_TX_ESC);
+	devm_free_irq(dev, dsi->irq, dsi);
+
+gpiod_free:
+	devm_gpiod_put(dev, reset);
+
+no_err:
+	return ret;
+}
+
 static int nwl_dsi_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
@@ -1196,6 +1418,9 @@ static int nwl_dsi_probe(struct platform_device *pdev)
 	ret = drm_bridge_add(&dsi->bridge);
 	if (ret < 0)
 		dev_err(dev, "Failed to add nwl-dsi bridge (%d)\n", ret);
+
+	// Send initialization commands to the remote device
+//	ret = nwl_dsi_write_early(dsi);
 
 	return ret;
 }
