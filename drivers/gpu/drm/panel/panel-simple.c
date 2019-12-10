@@ -486,9 +486,14 @@ static int panel_simple_prepare(struct drm_panel *panel)
 		// gjm: reset sequence specific to one panel; move to dts later
 		pr_info("gjm: simple_panel reset -> 0\n");
 		gpiod_set_value(p->reset, 1);
-		usleep_range(5000, 10000);
+		msleep(1);
 		pr_info("gjm: simple_panel reset -> 1\n");
 		gpiod_set_value(p->reset, 0);
+		msleep(1);
+		gpiod_set_value(p->reset, 1);
+		msleep(1);
+		gpiod_set_value(p->reset, 0);
+
 		msleep(130);
 		pr_info("gjm: simple_panel ready to send commands\n");
 	}
