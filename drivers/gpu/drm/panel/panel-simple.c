@@ -201,29 +201,44 @@ static int read_device_regs(struct panel_simple *panel, int generic) {
 	dsi = container_of(panel->base.dev, struct mipi_dsi_device, dev);
 	dsi->mode_flags |= MIPI_DSI_MODE_LPM;
 
-	lastpage = -1;
-	for (i = 0; i < regcount; ++i) {
-		if (regs[i].page != lastpage) {
-			pr_info("gjm: change to mfg command page %d\n", regs[i].page);
-			mipi_dsi_dcs_write_buffer(dsi,
-				(u8[]){0xf0, 0x55, 0xaa, 0x52, 0x08, regs[i].page},
-				6);
-			lastpage = regs[i].page;
-		}
+	// Original: read register list specified only
+//	lastpage = -1;
+//	for (i = 0; i < regcount; ++i) {
+//		if (regs[i].page != lastpage) {
+//			pr_info("gjm: change to mfg command page %d\n", regs[i].page);
+//			mipi_dsi_dcs_write_buffer(dsi,
+//				(u8[]){0xf0, 0x55, 0xaa, 0x52, 0x08, regs[i].page},
+//				6);
+//			lastpage = regs[i].page;
+//		}
+//
+//		// DCS requires one parameter, generic requires 2ish
+//		if (generic) {
+//			ret = mipi_dsi_generic_read(dsi, regs[i].cmd, 2, data, sizeof(data));
+//			if (ret < 0)
+//				return ret;
+//		}
+//		else {
+//			ret = mipi_dsi_dcs_read(dsi, regs[i].cmd[0], data, sizeof(data));
+//			if (ret < 0)
+//				return ret;
+//		}
+//
+//		print_mipi_read(generic, regs[i].cmd[0], data, regs[i].len);
+//	}
 
-		// DCS requires one parameter, generic requires 2ish
-		if (generic) {
-			ret = mipi_dsi_generic_read(dsi, regs[i].cmd, 2, data, sizeof(data));
+	for (lastpage = 0; lastpage < 2; ++lastpage) {
+		pr_info("gjm: change to mfg command page %d\n", lastpage);
+		mipi_dsi_dcs_write_buffer(dsi,
+			(u8[]){0xf0, 0x55, 0xaa, 0x52, 0x08, lastpage},
+			6);
+
+		for (i = 0xb0; i < 0x100; ++i) {
+			ret = mipi_dsi_dcs_read(dsi, (u8)i, data, sizeof(data));
 			if (ret < 0)
 				return ret;
+			print_mipi_read(0, (u8)i, data, 16);
 		}
-		else {
-			ret = mipi_dsi_dcs_read(dsi, regs[i].cmd[0], data, sizeof(data));
-			if (ret < 0)
-				return ret;
-		}
-
-		print_mipi_read(generic, regs[i].cmd[0], data, regs[i].len);
 	}
 
 	return 0;
@@ -506,9 +521,9 @@ static int panel_simple_prepare(struct drm_panel *panel)
 //	mdelay(10);
 
 	// Read all registers on the device before programming
-	err = read_device_regs(p, 1);
-	if (err)
-		return err;
+//	err = read_device_regs(p, 1);
+//	if (err)
+//		return err;
 
 	err = send_mipi_cmd_list(p, &p->mipi_cmds_init);
 	pr_info("gjm: send_mipi_cmd_list() -> %d", err);
@@ -519,9 +534,9 @@ static int panel_simple_prepare(struct drm_panel *panel)
 	p->prepared = true;
 
 	// And again after
-	err = read_device_regs(p, 1);
-	if (err)
-		return err;
+//	err = read_device_regs(p, 1);
+//	if (err)
+//		return err;
 
 	return 0;
 }
