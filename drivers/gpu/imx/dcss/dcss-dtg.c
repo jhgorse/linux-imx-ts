@@ -469,7 +469,7 @@ void dcss_dtg_enable(struct dcss_soc *dcss, bool en,
 	dcss->dcss_disable_callback = NULL;
 	dtg->dis_completion = NULL;
 
-	dtg->control_status |= DTG_START;
+//	dtg->control_status |= DTG_START;
 
 	dcss_dtg_write(dtg, dtg->control_status, DCSS_DTG_TC_CONTROL_STATUS);
 
