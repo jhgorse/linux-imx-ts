@@ -853,8 +853,6 @@ static int imx_nwl_dsi_bind(struct device *dev,
 		return ret;
 	}
 
-	dsi->next_bridge->encoder = &dsi->encoder;
-	dsi->encoder.bridge = dsi->next_bridge;
 	ret = drm_bridge_attach(&dsi->encoder, dsi->next_bridge, NULL);
 	if (ret)
 		drm_encoder_cleanup(&dsi->encoder);
