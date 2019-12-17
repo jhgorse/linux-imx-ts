@@ -421,14 +421,6 @@
 	status = "okay";
 	disp-dev = "mipi_disp";
 
-//	clocks = <&clk IMX8MQ_CLK_DISP_APB_ROOT>,
-//		 <&clk IMX8MQ_CLK_DISP_AXI_ROOT>,
-//		 <&clk IMX8MQ_CLK_DISP_RTRM_ROOT>,
-//		 <&clk IMX8MQ_CLK_DC_PIXEL>,
-//		 <&clk IMX8MQ_CLK_DUMMY>,
-//		 <&clk IMX8MQ_CLK_DISP_DTRC>;
-//	clock-names = "apb", "axi", "rtrm", "pix_div", "pix_out", "dtrc";
-
 	clocks = <&clk IMX8MQ_CLK_DISP_APB_ROOT>,
 		 <&clk IMX8MQ_CLK_DISP_AXI_ROOT>,
 		 <&clk IMX8MQ_CLK_DISP_RTRM_ROOT>,
@@ -591,7 +583,7 @@
 
 		display-timings {
 			timing {
-				clock-frequency = <69000000>;
+				clock-frequency = <75000000>;
 				hactive = <720>;
 				vactive = <1280>;
 				hfront-porch = <80>;
