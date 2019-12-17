@@ -450,6 +450,7 @@ static void nwl_dsi_init_interrupts(struct nwl_mipi_dsi *dsi)
 	nwl_dsi_write(dsi, IRQ_MASK2, 0x7);
 
 	irq_enable = ~(u32)(TX_PKT_DONE_MASK |
+			RX_PKT_PAYLOAD_DATA_RCVD_MASK |
 			RX_PKT_HDR_RCVD_MASK);
 
 	nwl_dsi_write(dsi, IRQ_MASK, irq_enable);
@@ -861,7 +862,8 @@ static void nwl_dsi_finish_transmission(struct nwl_mipi_dsi *dsi, u32 status)
 	if (xfer->direction == DSI_PACKET_SEND && status & TX_PKT_DONE) {
 		xfer->status = xfer->tx_len;
 		end_packet = true;
-	} else if (status & DPHY_DIRECTION && status & RX_PKT_HDR_RCVD)
+	} else if ((status & DPHY_DIRECTION && status & RX_PKT_HDR_RCVD)
+	           || (status & RX_PKT_PAYLOAD_DATA_RCVD))
 		end_packet = nwl_dsi_read_packet(dsi, status);
 
 	if (end_packet)
