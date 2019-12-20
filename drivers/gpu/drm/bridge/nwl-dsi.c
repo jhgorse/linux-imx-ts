@@ -399,6 +399,48 @@ static void nwl_dsi_config_dpi(struct nwl_mipi_dsi *dsi)
 	nwl_dsi_write(dsi, VFP, vm.vfront_porch);
 }
 
+#define DUMP_DSI(dsi, reg) \
+	do { \
+		int val = nwl_dsi_read(dsi, reg); \
+		pr_info("gjm: DSI " #reg " = 0x%08x\n", val); \
+	} while (0)
+
+static void nwl_dsi_dump_host(struct nwl_mipi_dsi *dsi)
+{
+	DUMP_DSI(dsi, CFG_NUM_LANES);
+	DUMP_DSI(dsi, CFG_NONCONTINUOUS_CLK);
+	DUMP_DSI(dsi, CFG_AUTOINSERT_EOTP);
+	DUMP_DSI(dsi, CFG_T_PRE);
+	DUMP_DSI(dsi, CFG_T_POST);
+	DUMP_DSI(dsi, CFG_TX_GAP);
+	DUMP_DSI(dsi, CFG_EXTRA_CMDS_AFTER_EOTP);
+	DUMP_DSI(dsi, CFG_HTX_TO_COUNT);
+	DUMP_DSI(dsi, CFG_LRX_H_TO_COUNT);
+	DUMP_DSI(dsi, CFG_BTA_H_TO_COUNT);
+	DUMP_DSI(dsi, CFG_TWAKEUP);
+}
+
+static void nwl_dsi_dump_dpi(struct nwl_mipi_dsi *dsi)
+{
+	DUMP_DSI(dsi, INTERFACE_COLOR_CODING);
+	DUMP_DSI(dsi, PIXEL_FORMAT);
+	DUMP_DSI(dsi, VSYNC_POLARITY);
+	DUMP_DSI(dsi, HSYNC_POLARITY);
+	DUMP_DSI(dsi, VIDEO_MODE);
+	DUMP_DSI(dsi, PIXEL_FIFO_SEND_LEVEL);
+	DUMP_DSI(dsi, HFP);
+	DUMP_DSI(dsi, HBP);
+	DUMP_DSI(dsi, HSA);
+	DUMP_DSI(dsi, ENABLE_MULT_PKTS);
+	DUMP_DSI(dsi, BLLP_MODE);
+	DUMP_DSI(dsi, USE_NULL_PKT_BLLP);
+	DUMP_DSI(dsi, VC);
+	DUMP_DSI(dsi, PIXEL_PAYLOAD_SIZE);
+	DUMP_DSI(dsi, VACTIVE);
+	DUMP_DSI(dsi, VBP);
+	DUMP_DSI(dsi, VFP);
+}
+
 static void nwl_dsi_enable_clocks(struct nwl_mipi_dsi *dsi, u32 clks)
 {
 	struct device *dev = dsi->dev;
@@ -1237,6 +1279,9 @@ static void nwl_dsi_bridge_enable(struct drm_bridge *bridge)
 				   DPI_RESET_N, DPI_RESET_N);
 
 	dsi->enabled = true;
+
+	nwl_dsi_dump_host(dsi);
+	nwl_dsi_dump_dpi(dsi);
 
 	return;
 
