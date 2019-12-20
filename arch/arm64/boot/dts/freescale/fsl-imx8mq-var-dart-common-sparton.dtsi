@@ -441,11 +441,11 @@
 				 <&clk IMX8MQ_SYS1_PLL_800M>,
 				 <&clk IMX8MQ_SYS1_PLL_800M>,
 				 <&clk IMX8MQ_CLK_27M>;
-	assigned-clock-rates = <556000000>,
+	assigned-clock-rates = <594000000>,
 			       <800000000>,
 			       <400000000>,
 			       <0>,
-			       <556000000>;
+			       <594000000>;
 
 	dcss_disp0: port@0 {
 		reg = <0>;
@@ -492,7 +492,7 @@
 			  <&clk IMX8MQ_CLK_DSI_CORE>;
 	assigned-clock-parents = <&clk IMX8MQ_VIDEO_PLL1_OUT>,
 				 <&clk IMX8MQ_SYS1_PLL_266M>;
-	assigned-clock-rates = <26155800>,
+	assigned-clock-rates = <27000000>,
 			       <266000000>;
 
 //	port@1 {
