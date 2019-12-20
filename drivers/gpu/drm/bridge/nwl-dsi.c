@@ -880,6 +880,8 @@ static void nwl_dsi_begin_transmission(struct nwl_mipi_dsi *dsi)
 	u8 lp_mode;
 	u32 val;
 
+	//pr_info("gjm: send %lu bytes\n", pkt->payload_length);
+
 	/* Send the payload, if any */
 	/* TODO: Need to check the TX FIFO overflow */
 	length = pkt->payload_length;
@@ -887,12 +889,18 @@ static void nwl_dsi_begin_transmission(struct nwl_mipi_dsi *dsi)
 
 	while (length >= 4) {
 		val = get_unaligned_le32(payload);
+		//pr_info("gjm: %lu: 0x%08x\n", length, val);
 		nwl_dsi_write(dsi, TX_PAYLOAD, val);
 		payload += 4;
 		length -= 4;
 	}
+
 	/* Send the rest of the payload */
 	val = 0;
+	if (length == 1 || length == 2) {
+		val |= 0x00010000;
+	}
+
 	switch (length) {
 	case 3:
 		val |= payload[2] << 16;
@@ -902,6 +910,7 @@ static void nwl_dsi_begin_transmission(struct nwl_mipi_dsi *dsi)
 		/* Fall through */
 	case 1:
 		val |= payload[0];
+		//pr_info("gjm: %lu: 0x%08x\n", length, val);
 		nwl_dsi_write(dsi, TX_PAYLOAD, val);
 		break;
 	}
