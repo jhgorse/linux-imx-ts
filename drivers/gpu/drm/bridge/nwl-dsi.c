@@ -237,6 +237,7 @@ struct nwl_mipi_dsi {
 
 static inline void nwl_dsi_write(struct nwl_mipi_dsi *dsi, u32 reg, u32 val)
 {
+	printk(KERN_DEBUG "%s: 0x%08x, 0x%04x\n", __func__, reg, val);
 	writel(val, dsi->base + reg);
 }
 
@@ -402,7 +403,7 @@ static void nwl_dsi_config_dpi(struct nwl_mipi_dsi *dsi)
 #define DUMP_DSI(dsi, reg) \
 	do { \
 		int val = nwl_dsi_read(dsi, reg); \
-		pr_info("gjm: DSI " #reg " = 0x%08x\n", val); \
+		printk(KERN_DEBUG "gjm: DSI " #reg " = 0x%08x\n", val); \
 	} while (0)
 
 static void nwl_dsi_dump_host(struct nwl_mipi_dsi *dsi)

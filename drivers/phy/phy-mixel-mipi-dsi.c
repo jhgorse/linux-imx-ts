@@ -95,6 +95,7 @@ static inline void phy_write(struct phy *phy, u32 value, unsigned int reg)
 {
 	struct mixel_mipi_phy_priv *priv = phy_get_drvdata(phy);
 
+	printk(KERN_DEBUG "%s(0x%08x, 0x%02x)\n", __func__, value, reg);
 	writel(value, priv->base + reg);
 }
 
@@ -324,6 +325,12 @@ static void mixel_phy_set_prg_regs(struct phy *phy)
 
 }
 
+#define DUMP_DPHY(phy, reg) \
+	do { \
+		int val = phy_read(phy, reg); \
+		printk(KERN_DEBUG "gjm: " #reg " = 0x%08x\n", val); \
+	} while (0)
+
 static int mixel_mipi_phy_init(struct phy *phy)
 {
 	struct mixel_mipi_phy_priv *priv = dev_get_drvdata(phy->dev.parent);
@@ -367,6 +374,21 @@ static int mixel_mipi_phy_init(struct phy *phy)
 	phy_write(phy, CM(priv->divider.cm), DPHY_CM);
 	phy_write(phy, CN(priv->divider.cn), DPHY_CN);
 	phy_write(phy, CO(priv->divider.co), DPHY_CO);
+
+	DUMP_DPHY(phy, DPHY_PD_DPHY);
+	DUMP_DPHY(phy, DPHY_M_PRG_HS_PREPARE);
+	DUMP_DPHY(phy, DPHY_MC_PRG_HS_PREPARE);
+	DUMP_DPHY(phy, DPHY_M_PRG_HS_ZERO);
+	DUMP_DPHY(phy, DPHY_MC_PRG_HS_ZERO);
+	DUMP_DPHY(phy, DPHY_M_PRG_HS_TRAIL);
+	DUMP_DPHY(phy, DPHY_MC_PRG_HS_TRAIL);
+	DUMP_DPHY(phy, DPHY_PD_PLL);
+	DUMP_DPHY(phy, DPHY_TST);
+	DUMP_DPHY(phy, DPHY_CN);
+	DUMP_DPHY(phy, DPHY_CM);
+	DUMP_DPHY(phy, DPHY_CO);
+	DUMP_DPHY(phy, DPHY_LOCK);
+	DUMP_DPHY(phy, DPHY_LOCK_BYP);
 
 	mutex_unlock(&priv->lock);
 
