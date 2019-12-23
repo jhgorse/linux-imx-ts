@@ -141,7 +141,7 @@
  * and slightly changed to use the defines available in
  * "dt-bindings/display/simple_panel_mipi_cmds.h"
  ******************************************************************************/
-#if 0
+#if 0 // jhg
 		mipi-cmds-init = /bits/ 8 <
 			//========== Page 0 relative ==========
 			//DCS_L5P(0xF0,0x55,0xAA,0x52, 0x08,0x00, 0x01)
@@ -247,10 +247,10 @@
 		>;
 #endif
 		mipi-cmds-enable = /bits/ 8 <
-// #define NT35521Z_SELF_TEST
+#define NT35521Z_SELF_TEST
 #ifdef NT35521Z_SELF_TEST
 			DCS_L5P(0xF0,0x55,0xAA,0x52,0x08,0x00)
-			DCS_L3P(0xEF,0x07,0xff,0xff)
+			2 0xEF 0x01
 			DCS_L4P(0xEE,0x87,0x78,0x02,0x40)
 			// QS Reference:
 			// DCS_Long_Write_5P (0xF0,0x55,0xAA,0x52,0x08,0x00);
@@ -258,8 +258,9 @@
 			// DCS_Long_Write_4P (0xEE,0x87,0x78,0x02,0x40);
 #else /* NT35521Z_SELF_TEST */
 			DCS_S0P(0x11)
-			DELAY(150)
+			DELAY(20)
 			DCS_S0P(0x29)
+			DELAY(20)
 #endif /* NT35521Z_SELF_TEST */
 		>;
 	};
