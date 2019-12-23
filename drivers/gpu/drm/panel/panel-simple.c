@@ -490,12 +490,11 @@ static int panel_simple_prepare(struct drm_panel *panel)
 		msleep(1);
 		pr_info("gjm: simple_panel reset -> 1\n");
 		gpiod_set_value(p->reset, 0);
-		msleep(1);
+		msleep(84); // jhg: DEFAULT IDLE
 		gpiod_set_value(p->reset, 1);
-		msleep(1);
+		msleep(23); // jhg: RESET
 		gpiod_set_value(p->reset, 0);
-
-		msleep(130);
+		msleep(60); // jhg: delay to first lp mode command
 		pr_info("gjm: simple_panel ready to send commands\n");
 	}
 
