@@ -249,7 +249,7 @@ static int send_mipi_cmd_list(struct panel_simple *panel, struct mipi_cmd *mc)
 	struct mipi_dsi_device *dsi;
 	const u8 *cmd = mc->mipi_cmds;
 	unsigned length = mc->length;
-	u8 data[4];
+	u8 data[18];
 	unsigned len;
 	int ret;
 	int generic;
