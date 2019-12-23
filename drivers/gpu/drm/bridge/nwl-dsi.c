@@ -1228,6 +1228,8 @@ static void nwl_dsi_bridge_enable(struct drm_bridge *bridge)
 	struct mipi_dsi_device *dsi_device = dsi->dsi_device;
 	struct device *dev = dsi->dev;
 	int ret;
+	
+	pr_info("jhg: %s 1\n", __func__);
 
 	if (dsi->enabled || (!dsi->panel && !dsi->next_bridge))
 		return;
@@ -1260,6 +1262,9 @@ static void nwl_dsi_bridge_enable(struct drm_bridge *bridge)
 		goto phy_err;
 	}
 
+	pr_info("jhg: %s 2\n", __func__);
+
+
 	nwl_dsi_init_interrupts(dsi);
 	nwl_dsi_config_dpi(dsi);
 
@@ -1277,7 +1282,8 @@ static void nwl_dsi_bridge_enable(struct drm_bridge *bridge)
 
 	nwl_dsi_config_host(dsi);
 
-	if (dsi->panel && drm_panel_enable(dsi->panel)) {
+	pr_info("jhg: %s dsi->panel %p\n", __func__, dsi->panel);
+	if (dsi->panel && drm_panel_enable(dsi->panel)) { // jhg: crash here
 		DRM_DEV_ERROR(dev, "Failed to enable panel\n");
 		drm_panel_unprepare(dsi->panel);
 		goto enable_err;

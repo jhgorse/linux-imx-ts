@@ -110,7 +110,6 @@ static inline struct panel_simple *to_panel_simple(struct drm_panel *panel)
 	return container_of(panel, struct panel_simple, base);
 }
 
-<<<<<<< HEAD
 static void print_mipi_read(int generic, u8 reg, u8 *data, int count) {
 	char buffer[128];
 	char strval[6];
@@ -245,8 +244,6 @@ static int read_device_regs(struct panel_simple *panel, int generic) {
 	return 0;
 }
 
-=======
->>>>>>> parent of 42a01f5... Verify register writes with immediate reads; dump some registers before/after init
 static int send_mipi_cmd_list(struct panel_simple *panel, struct mipi_cmd *mc)
 {
 	struct mipi_dsi_device *dsi;
@@ -277,18 +274,14 @@ static int send_mipi_cmd_list(struct panel_simple *panel, struct mipi_cmd *mc)
 				ret = mipi_dsi_generic_write(dsi, cmd, len);
 			else
 				ret = mipi_dsi_dcs_write_buffer(dsi, cmd, len);
-<<<<<<< HEAD
-				if (ret < 0) {
-					dev_err(&dsi->dev,
-						"Failed to send DCS write (%d), (%d)%02x\n",
-						ret, len, cmd[0]);
-				}
-				else if (len < sizeof(data)) {
-					mipi_dsi_dcs_read(dsi, cmd[0], data, 17);
-				}
+			if (ret < 0) {
+				dev_err(&dsi->dev,
+					"Failed to send DCS write (%d), (%d)%02x\n",
+					ret, len, cmd[0]);
 			}
-=======
->>>>>>> parent of 42a01f5... Verify register writes with immediate reads; dump some registers before/after init
+			else if (len < sizeof(data)) {
+				mipi_dsi_dcs_read(dsi, cmd[0], data, 17);
+			}
 		} else if (len == S_MRPS) {
 				ret = mipi_dsi_set_maximum_return_packet_size(
 					dsi, cmd[0]);
@@ -497,11 +490,7 @@ static int panel_simple_prepare(struct drm_panel *panel)
 		// gjm: reset sequence specific to one panel; move to dts later
 		pr_info("gjm: simple_panel reset -> 0\n");
 		gpiod_set_value(p->reset, 1);
-<<<<<<< HEAD
 		msleep(1);
-=======
-		usleep_range(1000, 5000);
->>>>>>> parent of 42a01f5... Verify register writes with immediate reads; dump some registers before/after init
 		pr_info("gjm: simple_panel reset -> 1\n");
 		gpiod_set_value(p->reset, 0);
 		msleep(1);
@@ -516,7 +505,6 @@ static int panel_simple_prepare(struct drm_panel *panel)
 	if (p->desc->delay.prepare)
 		msleep(p->desc->delay.prepare);
 
-<<<<<<< HEAD
 //	dsi = container_of(p->base.dev, struct mipi_dsi_device, dev);
 //	mipi_dsi_dcs_enter_sleep_mode(dsi);
 //	mdelay(10);
@@ -525,11 +513,6 @@ static int panel_simple_prepare(struct drm_panel *panel)
 //	err = read_device_regs(p, 1);
 //	if (err)
 //		return err;
-=======
-	dsi = container_of(p->base.dev, struct mipi_dsi_device, dev);
-	mipi_dsi_dcs_enter_sleep_mode(dsi);
-	mdelay(10);
->>>>>>> parent of 42a01f5... Verify register writes with immediate reads; dump some registers before/after init
 
 	err = send_mipi_cmd_list(p, &p->mipi_cmds_init);
 	pr_info("gjm: send_mipi_cmd_list() -> %d", err);
@@ -539,14 +522,11 @@ static int panel_simple_prepare(struct drm_panel *panel)
 	}
 	p->prepared = true;
 
-<<<<<<< HEAD
 	// And again after
 //	err = read_device_regs(p, 1);
 //	if (err)
 //		return err;
 
-=======
->>>>>>> parent of 42a01f5... Verify register writes with immediate reads; dump some registers before/after init
 	return 0;
 }
 

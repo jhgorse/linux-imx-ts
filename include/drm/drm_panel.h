@@ -162,6 +162,7 @@ static inline int drm_panel_prepare(struct drm_panel *panel)
  */
 static inline int drm_panel_enable(struct drm_panel *panel)
 {
+	pr_info("jhg: %s panel %p panel->funcs %p panel->funcs->enable %p\n", __func__, panel, panel->funcs, panel->funcs->enable);
 	if (panel && panel->funcs && panel->funcs->enable)
 		return panel->funcs->enable(panel);
 
