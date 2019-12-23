@@ -279,9 +279,6 @@ static int send_mipi_cmd_list(struct panel_simple *panel, struct mipi_cmd *mc)
 					"Failed to send DCS write (%d), (%d)%02x\n",
 					ret, len, cmd[0]);
 			}
-			else if (len < sizeof(data)) {
-				mipi_dsi_dcs_read(dsi, cmd[0], data, 17);
-			}
 		} else if (len == S_MRPS) {
 				ret = mipi_dsi_set_maximum_return_packet_size(
 					dsi, cmd[0]);
