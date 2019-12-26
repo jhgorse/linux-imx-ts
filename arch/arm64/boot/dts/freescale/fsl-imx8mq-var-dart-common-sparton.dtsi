@@ -559,12 +559,12 @@
 		mipi-cmds = <&mipi_cmds_nt35521z>;
 		/*bridge-de-active = <1>;*/
 		/*bridge-sync-active = <1>;*/
-		mode-clock-non-contiguous;
+		/*mode-clock-non-contiguous;*/ // jhg: try continous clock mode
 		/*mode-skip-eot;*/
 		mode-video;
-		mode-video-burst;
+		/*mode-video-burst;*/ // jhg: non-burst with sync pulse
 		/*mode-video-hse;*/
-		/*mode-video-sync-pulse;*/
+		mode-video-sync-pulse; // jhg: non-burst with sync pulse
 		/*mode-video-hfp-disable;*/
 		/*mode-video-hbp-disable;*/
 		/*mode-video-hsa-disable;*/
