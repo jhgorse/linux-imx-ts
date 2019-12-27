@@ -396,7 +396,7 @@ static void nwl_dsi_config_dpi(struct nwl_mipi_dsi *dsi)
 	nwl_dsi_write(dsi, VC, 0x0);
 
 	nwl_dsi_write(dsi, PIXEL_PAYLOAD_SIZE, vm.hactive);
-	nwl_dsi_write(dsi, VACTIVE, vm.vactive - 1);
+	nwl_dsi_write(dsi, VACTIVE, vm.vactive);
 	nwl_dsi_write(dsi, VBP, vm.vback_porch);
 	nwl_dsi_write(dsi, VFP, vm.vfront_porch);
 }
