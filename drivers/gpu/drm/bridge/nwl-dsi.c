@@ -340,7 +340,7 @@ static void nwl_dsi_config_host(struct nwl_mipi_dsi *dsi)
 	else
 		nwl_dsi_write(dsi, CFG_AUTOINSERT_EOTP, 0x01);
 
-	nwl_dsi_write(dsi, CFG_T_PRE, 0x16); // jhg
+	nwl_dsi_write(dsi, CFG_T_PRE, 0x18); // jhg
 	nwl_dsi_write(dsi, CFG_T_POST, 14);  // jhg
 	nwl_dsi_write(dsi, CFG_TX_GAP, 6);   // jhg
 	nwl_dsi_write(dsi, CFG_EXTRA_CMDS_AFTER_EOTP, 0x00);
@@ -385,9 +385,9 @@ static void nwl_dsi_config_dpi(struct nwl_mipi_dsi *dsi)
 		pr_info("jhg: %s non burst_mode vm.hactive %d\n", __func__, vm.hactive);
 	}
 
-	nwl_dsi_write(dsi, HFP, 3*vm.hfront_porch);
-	nwl_dsi_write(dsi, HBP, 3*vm.hback_porch);
-	nwl_dsi_write(dsi, HSA, 3*vm.hsync_len);
+	nwl_dsi_write(dsi, HFP, vm.hfront_porch);
+	nwl_dsi_write(dsi, HBP, vm.hback_porch);
+	nwl_dsi_write(dsi, HSA, vm.hsync_len);
 
 	nwl_dsi_write(dsi, ENABLE_MULT_PKTS, 0x0);
 	nwl_dsi_write(dsi, BLLP_MODE, 0x1);
