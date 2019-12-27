@@ -580,8 +580,8 @@
 				clock-frequency = <75000000>;
 				hactive = <720>;
 				vactive = <1280>;
-				hfront-porch = <80>;
-				hback-porch = <70>;
+				hfront-porch = <85>;
+				hback-porch = <75>;
 				hsync-len = <10>;
 				hsync-active = <0>;
 				vfront-porch = <16>;
