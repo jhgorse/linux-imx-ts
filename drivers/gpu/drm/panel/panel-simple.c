@@ -270,28 +270,14 @@ static int send_mipi_cmd_list(struct panel_simple *panel, struct mipi_cmd *mc)
 
 		ret = 0;
 		if (len < S_DELAY) {
-			memset(data, 0, sizeof(data));
-			if (generic) {
+			if (generic)
 				ret = mipi_dsi_generic_write(dsi, cmd, len);
-				if (ret < 0) {
-					dev_err(&dsi->dev,
-						"Failed to send generic write (%d), (%d)%02x\n",
-						ret, len, cmd[0]);
-				}
-				else if (len < sizeof(data)) {
-					mipi_dsi_generic_read(dsi, cmd, 2, data, len);
-				}
-			}
-			else {
+			else
 				ret = mipi_dsi_dcs_write_buffer(dsi, cmd, len);
-				if (ret < 0) {
-					dev_err(&dsi->dev,
-						"Failed to send DCS write (%d), (%d)%02x\n",
-						ret, len, cmd[0]);
-				}
-				else if (len < sizeof(data)) {
-					mipi_dsi_dcs_read(dsi, cmd[0], data, 17);
-				}
+			if (ret < 0) {
+				dev_err(&dsi->dev,
+					"Failed to send DCS write (%d), (%d)%02x\n",
+					ret, len, cmd[0]);
 			}
 		} else if (len == S_MRPS) {
 				ret = mipi_dsi_set_maximum_return_packet_size(
@@ -451,7 +437,7 @@ static int panel_simple_disable(struct drm_panel *panel)
 
 	if (p->desc->delay.disable)
 		msleep(p->desc->delay.disable);
-	send_mipi_cmd_list(p, &p->mipi_cmds_disable);
+	// send_mipi_cmd_list(p, &p->mipi_cmds_disable);
 
 	p->enabled = false;
 
@@ -504,12 +490,11 @@ static int panel_simple_prepare(struct drm_panel *panel)
 		msleep(1);
 		pr_info("gjm: simple_panel reset -> 1\n");
 		gpiod_set_value(p->reset, 0);
-		msleep(1);
+		msleep(84); // jhg: DEFAULT IDLE
 		gpiod_set_value(p->reset, 1);
-		msleep(1);
+		msleep(23); // jhg: RESET
 		gpiod_set_value(p->reset, 0);
-
-		msleep(130);
+		msleep(60); // jhg: delay to first lp mode command
 		pr_info("gjm: simple_panel ready to send commands\n");
 	}
 
@@ -551,15 +536,21 @@ static int panel_simple_enable(struct drm_panel *panel)
 		return 0;
 
 	dsi = container_of(p->base.dev, struct mipi_dsi_device, dev);
-//	mipi_dsi_dcs_set_pixel_format(dsi, 0x77);
-//	mipi_dsi_dcs_set_tear_on(dsi, MIPI_DSI_DCS_TEAR_MODE_VHBLANK);
-//	mipi_dsi_dcs_exit_sleep_mode(dsi);
-//	msleep(150);
-//	mipi_dsi_dcs_set_display_on(dsi);
+        // mipi_dsi_dcs_set_pixel_format(dsi, 0x77);
+        // mipi_dsi_dcs_set_tear_on(dsi, MIPI_DSI_DCS_TEAR_MODE_VHBLANK);
 
 	ret = send_mipi_cmd_list(p, &p->mipi_cmds_enable);
-	if (ret < 0)
-		goto fail;
+      	if (ret < 0)
+       		goto fail;
+
+        // mipi_dsi_dcs_exit_sleep_mode(dsi);
+        // msleep(20);
+        // mipi_dsi_dcs_set_display_on(dsi);
+        // msleep(20);
+	dsi->mode_flags |= MIPI_DSI_MODE_LPM;
+        mipi_dsi_turn_on_peripheral(dsi);
+	pr_info("jhg: turn on peripheral.\n");
+
 	if (p->desc->delay.enable)
 		msleep(p->desc->delay.enable);
 

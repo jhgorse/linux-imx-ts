@@ -218,7 +218,7 @@ static void mixel_phy_set_prg_regs(struct phy *phy)
 	 * this gives 55-50 ns.
 	 * The specification is 38 to 95 ns.
 	 */
-	phy_write(phy, 0x00, DPHY_MC_PRG_HS_PREPARE);
+	phy_write(phy, 0x01, DPHY_MC_PRG_HS_PREPARE);
 
 	/* PRG_HS_PREPARE
 	 * for  PRG_HS_PREPARE = 00, THS-PREPARE = 1   * TxClkEsc Period
@@ -256,6 +256,7 @@ static void mixel_phy_set_prg_regs(struct phy *phy)
 
 	if (hs_reg < 1)
 		hs_reg = 1;
+
 	phy_write(phy, hs_reg, DPHY_MC_PRG_HS_ZERO);
 
 	/* M_PRG_HS_ZERO

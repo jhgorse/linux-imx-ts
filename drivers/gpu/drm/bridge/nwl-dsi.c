@@ -341,9 +341,9 @@ static void nwl_dsi_config_host(struct nwl_mipi_dsi *dsi)
 	else
 		nwl_dsi_write(dsi, CFG_AUTOINSERT_EOTP, 0x01);
 
-	nwl_dsi_write(dsi, CFG_T_PRE, 0x01);
-	nwl_dsi_write(dsi, CFG_T_POST, 0x34);
-	nwl_dsi_write(dsi, CFG_TX_GAP, 0x0D);
+	nwl_dsi_write(dsi, CFG_T_PRE, 0x18); // jhg
+	nwl_dsi_write(dsi, CFG_T_POST, 14);  // jhg
+	nwl_dsi_write(dsi, CFG_TX_GAP, 6);   // jhg
 	nwl_dsi_write(dsi, CFG_EXTRA_CMDS_AFTER_EOTP, 0x00);
 	nwl_dsi_write(dsi, CFG_HTX_TO_COUNT, 0x00);
 	nwl_dsi_write(dsi, CFG_LRX_H_TO_COUNT, 0x00);
@@ -376,12 +376,14 @@ static void nwl_dsi_config_dpi(struct nwl_mipi_dsi *dsi)
 	burst_mode = (dsi_device->mode_flags & MIPI_DSI_MODE_VIDEO_BURST) &&
 		!(dsi_device->mode_flags & MIPI_DSI_MODE_VIDEO_SYNC_PULSE);
 
+	pr_info("jhg: %s burst_mode %d\n", __func__, burst_mode);
 	if (burst_mode) {
 		nwl_dsi_write(dsi, VIDEO_MODE, 0x2);
 		nwl_dsi_write(dsi, PIXEL_FIFO_SEND_LEVEL, 256);
 	} else {
 		nwl_dsi_write(dsi, VIDEO_MODE, 0x0);
 		nwl_dsi_write(dsi, PIXEL_FIFO_SEND_LEVEL, vm.hactive);
+		pr_info("jhg: %s non burst_mode vm.hactive %d\n", __func__, vm.hactive);
 	}
 
 	nwl_dsi_write(dsi, HFP, vm.hfront_porch);
