@@ -141,7 +141,7 @@
  * and slightly changed to use the defines available in
  * "dt-bindings/display/simple_panel_mipi_cmds.h"
  ******************************************************************************/
-#if 0 // jhg
+#if 1 // jhg
 		mipi-cmds-init = /bits/ 8 <
 			//========== Page 0 relative ==========
 			//DCS_L5P(0xF0,0x55,0xAA,0x52, 0x08,0x00, 0x01)

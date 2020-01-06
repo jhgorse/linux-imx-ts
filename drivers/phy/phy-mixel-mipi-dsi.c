@@ -95,7 +95,6 @@ static inline void phy_write(struct phy *phy, u32 value, unsigned int reg)
 {
 	struct mixel_mipi_phy_priv *priv = phy_get_drvdata(phy);
 
-	printk(KERN_DEBUG "%s(0x%08x, 0x%02x)\n", __func__, value, reg);
 	writel(value, priv->base + reg);
 }
 
