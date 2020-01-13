@@ -120,18 +120,16 @@
 		#size-cells = <2>;
 		ranges;
 
-		m4_reserved_text: m4@0x1FFE0240 {
+		m4_reserved_tcm: m4@7e0000 {
 			no-map;
-			reg = <0 0x1FFE0240 0 0x0001FDC0>;
+			reg = <0 0x7e0000 0 0x40000>;
 		};
-		m4_reserved_data: m4@0x20000000 {
-			no-map;
-			reg = <0 0x20000000 0 0x0020000>;
-		};
+
 		m4_reserved_data2: m4@0x80000000 {
 			no-map;
 			reg = <0 0x80000000 0 0x1000000>;
 		};
+
 	};
 
 
@@ -629,4 +627,5 @@
 
 &usb_dwc3_0 {
 	extcon = <>;	/* no typec@3d */
+	dr_mode = "host";
 };
