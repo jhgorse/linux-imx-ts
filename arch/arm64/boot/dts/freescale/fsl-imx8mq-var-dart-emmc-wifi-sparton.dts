@@ -14,14 +14,9 @@
  */
 
 #include "fsl-imx8mq-var-dart-common.dtsi"
-#include "fsl-imx8mq-var-dart-sd.dtsi"
+#include "fsl-imx8mq-var-dart-wifi.dtsi"
 #include "fsl-imx8mq-var-dart-common-sparton.dtsi"
 
 / {
-	model = "Sparton ft Variscite DART-MX8M SD+EMMC+MIPI";
-};
-
-&usdhc2 {
-	/* remove 200 MHz settings due to U42 attenuation */
-	pinctrl-names = "default", "state_100mhz";
+	model = "Sparton ft Variscite DART-MX8M EMMC+WIFI+MIPI";
 };
