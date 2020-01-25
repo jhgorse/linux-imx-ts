@@ -65,7 +65,7 @@
 			"IN1L", "Mic Jack",
 			"Playback", "CPU-Playback",
 			"CPU-Capture", "Capture";
-		status = "okay";
+		status = "disabled";
 	};
 
 	sound-hdmi {
@@ -493,7 +493,7 @@
 	phy-mode = "rgmii";
 	phy-handle = <&ethphy0>;
 	fsl,magic-packet;
-	status = "okay";
+	status = "disabled";
 	phy-reset-gpios = <&gpio1 9 GPIO_ACTIVE_LOW>;
 	phy-reset-duration = <10>;
 
@@ -616,7 +616,7 @@
 			0xffff /* GPIO3 => don't touch */
 			0xffff /* GPIO4 => don't touch */
 		>;
-		status = "okay";
+		status = "disabled";
 	};
 
 	dsi_lvds_bridge: sn65dsi84@2c {
@@ -917,6 +917,25 @@
 
 &gpu {
 	status = "okay";
+	clocks = <&clk IMX8MQ_CLK_GPU_ROOT>,
+				<&clk IMX8MQ_CLK_GPU_SHADER_DIV>,
+				<&clk IMX8MQ_CLK_GPU_AXI>,
+				<&clk IMX8MQ_CLK_GPU_AHB>;
+	clock-names = "gpu3d_clk",
+				"gpu3d_shader_clk",
+				"gpu3d_axi_clk",
+				"gpu3d_ahb_clk";
+	assigned-clocks = <&clk IMX8MQ_CLK_GPU_CORE_SRC>,
+					<&clk IMX8MQ_CLK_GPU_SHADER_SRC>,
+					<&clk IMX8MQ_CLK_GPU_AXI>,
+					<&clk IMX8MQ_CLK_GPU_AHB>,
+					<&clk IMX8MQ_GPU_PLL_BYPASS>;
+	assigned-clock-parents = <&clk IMX8MQ_GPU_PLL_OUT>,
+					<&clk IMX8MQ_GPU_PLL_OUT>,
+					<&clk IMX8MQ_GPU_PLL_OUT>,
+					<&clk IMX8MQ_GPU_PLL_OUT>,
+					<&clk IMX8MQ_GPU_PLL>;
+	assigned-clock-rates = <400000000>, <400000000>, <400000000>, <400000000>, <0>;
 };
 
 &vpu {
@@ -948,9 +967,9 @@
 &A53_0 {
 	operating-points = <
 		/* kHz    uV */
-		1500000 1000000
-		1300000 1000000
-		1000000 900000
+//		1500000 1000000
+//		1300000 1000000
+//		1000000 900000
 		800000  900000
 	>;
 	dc-supply = <&reg_cpu_dvfs>;

@@ -384,8 +384,8 @@ static void __init imx8mq_opp_check_speed_grading(struct device *cpu_dev)
 
 	switch (val) {
 	case OCOTP_CFG3_CONSUMER:
-		if (dev_pm_opp_disable(cpu_dev, 800000000))
-			pr_warn("failed to disable 800MHz OPP!\n");
+//		if (dev_pm_opp_disable(cpu_dev, 800000000))
+//			pr_warn("failed to disable 800MHz OPP!\n");
 		if (dev_pm_opp_disable(cpu_dev, 1300000000))
 			pr_warn("failed to disable 1.3GHz OPP!\n");
 		if (speed_grading != OCOTP_CFG3_SPEED_1P5GHZ) {
@@ -405,8 +405,8 @@ static void __init imx8mq_opp_check_speed_grading(struct device *cpu_dev)
 		break;
 	default:
 		/* consumer part for default */
-		if (dev_pm_opp_disable(cpu_dev, 800000000))
-			pr_warn("failed to disable 800MHz OPP!\n");
+//		if (dev_pm_opp_disable(cpu_dev, 800000000))
+//			pr_warn("failed to disable 800MHz OPP!\n");
 		if (dev_pm_opp_disable(cpu_dev, 1300000000))
 			pr_warn("failed to disable 1.3GHz OPP!\n");
 		if (speed_grading != OCOTP_CFG3_SPEED_1P5GHZ) {
