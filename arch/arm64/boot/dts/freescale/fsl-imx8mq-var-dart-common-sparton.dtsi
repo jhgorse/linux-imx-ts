@@ -385,23 +385,16 @@
 		ti,thermal-regulation-threshold = <120>;
 	};
 
-//	max17055: max17055@36 {
-//		compatible = "maxim,max17055";
-//		status = "okay";
-//		reg = <0x36>;
-//
-//		rsense = <10>;
-//		model-option = <1>; /* see max17055_battery.dtsi */
-//
-//		talrt-min   = <0>;          /* DegreeC */
-//		talrt-max   = <50>;         /* DegreeC */
-//		valrt-min   = <3000>;       /* mV */
-//		valrt-max   = <4500>;       /* mV */
-//		salrt-min   = <1>;          /* Percent */
-//		salrt-max   = <99>;         /* Percent */
-//		ialrt-min   = <(-5000)>;    /* mA */
-//		ialrt-max   = <5000>;       /* mA */
-//	};
+	max17055: battery-charger@36 {
+		compatible = "maxim,max17055";
+		reg = <0x36>;
+		status = "okay";
+		maxim,rsns-microohm = <10000>;
+
+		// todo verify these values
+		maxim,over-heat-temp = <600>;
+		maxim,over-volt = <4300>;
+	};
 };
 
 &i2c4 {
