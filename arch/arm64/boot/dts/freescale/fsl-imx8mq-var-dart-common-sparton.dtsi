@@ -60,10 +60,11 @@
 			linux,code = <KEY_F5>;
 		};
 
-		GPIO308 {
-			gpios = <&gpio3 8 GPIO_ACTIVE_LOW>;
-			linux,code = <KEY_F6>;
-		};
+// Control with gpiod
+//		GPIO308 {
+//			gpios = <&gpio3 8 GPIO_ACTIVE_LOW>;
+//			linux,code = <KEY_F6>;
+//		};
 
 		GPIO316 {
 			gpios = <&gpio3 16 GPIO_ACTIVE_LOW>;
@@ -125,9 +126,9 @@
 			reg = <0 0x7e0000 0 0x40000>;
 		};
 
-		m4_reserved_data2: m4@0x80000000 {
+		m4_reserved_data2: m4@0xBF000000 {
 			no-map;
-			reg = <0 0x80000000 0 0x1000000>;
+			reg = <0 0xBF000000 0 0x1000000>;
 		};
 
 	};
