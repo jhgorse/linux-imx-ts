@@ -287,6 +287,13 @@ static struct clk ** const uart_clks[] __initconst = {
 	NULL
 };
 
+//djk - Configure per NXP AN12225 - Per design only need M4, UART2, WD3
+static int const clks_init_on_m4[] __initconst = {
+	IMX8MQ_CLK_M4_CG,
+	IMX8MQ_CLK_UART2_ROOT,
+	IMX8MQ_CLK_WDOG3_ROOT,
+};
+
 static struct clk_onecell_data clk_data;
 
 static int __init imx_clk_init_on(struct device_node *np,
@@ -595,6 +602,9 @@ static void __init imx8mq_clocks_init(struct device_node *ccm_node)
 	if (imx_clk_init_on(ccm_node, clks)) {
 		for (i = 0; i < ARRAY_SIZE(clks_init_on);  i++)
 			clk_prepare_enable(clks[clks_init_on[i]]);
+
+		for (i = 0; i < ARRAY_SIZE(clks_init_on_m4); i++)
+			clk_prepare_enable(clks[clks_init_on_m4[i]]);  //djk
 	}
 
 	clk_set_parent(clks[IMX8MQ_CLK_AHB], clks[IMX8MQ_SYS1_PLL_133M]);

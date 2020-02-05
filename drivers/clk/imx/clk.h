@@ -296,10 +296,13 @@ static inline struct clk *imx_clk_gate3(const char *name, const char *parent,
 	 * control, so they suggest to leave clk root always on when
 	 * M4 is enabled.
 	 */
+//djk - Configure per NXP AN12225
+#if 0
 	if (imx_src_is_m4_enabled())
 		return clk_register_fixed_factor(NULL, name, parent,
 						 CLK_SET_RATE_PARENT, 1, 1);
 	else
+#endif
 		return clk_register_gate(NULL, name, parent,
 			CLK_SET_RATE_PARENT | CLK_OPS_PARENT_ENABLE,
 			reg, shift, 0, &imx_ccm_lock);
