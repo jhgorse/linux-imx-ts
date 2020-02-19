@@ -237,10 +237,7 @@ static int max17042_get_property(struct power_supply *psy,
 		break;
 	case POWER_SUPPLY_PROP_PRESENT:
 		ret = regmap_read(map, MAX17042_STATUS, &data);
-		if (ret < 0)
-			return ret;
-
-		if (data & MAX17042_STATUS_BattAbsent)
+		if (ret < 0 || data & MAX17042_STATUS_BattAbsent)
 			val->intval = 0;
 		else
 			val->intval = 1;
