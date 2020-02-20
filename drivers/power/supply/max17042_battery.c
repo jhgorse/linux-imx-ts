@@ -1050,6 +1050,12 @@ static int max17042_probe(struct i2c_client *client,
 		regmap_write(chip->regmap, MAX17042_LearnCFG, 0x0007);
 	}
 
+	ret = regmap_read(chip->regmap, MAX17042_STATUS, &val);
+	if (ret < 0) {
+		dev_err(&client->dev, "max17042 not present or inactive\n");
+		return -EINVAL;
+	}
+
 	chip->battery = devm_power_supply_register(&client->dev, max17042_desc,
 						   &psy_cfg);
 	if (IS_ERR(chip->battery)) {
