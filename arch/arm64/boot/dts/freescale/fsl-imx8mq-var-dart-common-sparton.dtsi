@@ -106,9 +106,9 @@
 			gpios = <&gpio3 25 GPIO_ACTIVE_LOW>;
 		};
 
-		USB1_TRIGn {
-			gpios = <&gpio5 28 GPIO_ACTIVE_LOW>;
-		};
+//		USB1_TRIGn {
+//			gpios = <&gpio5 28 GPIO_ACTIVE_LOW>;
+//		};
 
 		USB1_PWREN {
 			gpios = <&gpio5 29 GPIO_ACTIVE_LOW>;
