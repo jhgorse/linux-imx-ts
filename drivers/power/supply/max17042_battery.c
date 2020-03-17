@@ -232,15 +232,10 @@ static int max17042_get_property(struct power_supply *psy,
 	switch (psp) {
 	case POWER_SUPPLY_PROP_STATUS:
 		ret = max17042_get_status(chip, &val->intval);
-		if (ret < 0)
-			return ret;
 		break;
 	case POWER_SUPPLY_PROP_PRESENT:
 		ret = regmap_read(map, MAX17042_STATUS, &data);
-		if (ret < 0)
-			return ret;
-
-		if (data & MAX17042_STATUS_BattAbsent)
+		if (ret < 0 || data & MAX17042_STATUS_BattAbsent)
 			val->intval = 0;
 		else
 			val->intval = 1;
@@ -251,24 +246,25 @@ static int max17042_get_property(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_CYCLE_COUNT:
 		ret = regmap_read(map, MAX17042_Cycles, &data);
 		if (ret < 0)
-			return ret;
-
-		val->intval = data;
+			val->intval = 0;
+		else
+			val->intval = data;
 		break;
 	case POWER_SUPPLY_PROP_VOLTAGE_MAX:
 		ret = regmap_read(map, MAX17042_MinMaxVolt, &data);
 		if (ret < 0)
-			return ret;
-
-		val->intval = data >> 8;
-		val->intval *= 20000; /* Units of LSB = 20mV */
+			val->intval = 0;
+		else {
+			val->intval = data >> 8;
+			val->intval *= 20000; /* Units of LSB = 20mV */
+		}
 		break;
 	case POWER_SUPPLY_PROP_VOLTAGE_MIN:
 		ret = regmap_read(map, MAX17042_MinMaxVolt, &data);
 		if (ret < 0)
-			return ret;
-
-		val->intval = (data & 0xff) * 20000; /* Units of 20mV */
+			val->intval = 0;
+		else
+			val->intval = (data & 0xff) * 20000; /* Units of 20mV */
 		break;
 	case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
 		if (chip->chip_type == MAXIM_DEVICE_TYPE_MAX17042)
@@ -278,91 +274,97 @@ static int max17042_get_property(struct power_supply *psy,
 		else
 			ret = regmap_read(map, MAX17047_V_empty, &data);
 		if (ret < 0)
-			return ret;
-
-		val->intval = data >> 7;
-		val->intval *= 10000; /* Units of LSB = 10mV */
+			val->intval = 0;
+		else {
+			val->intval = data >> 7;
+			val->intval *= 10000; /* Units of LSB = 10mV */
+		}
 		break;
 	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
 		ret = regmap_read(map, MAX17042_VCELL, &data);
 		if (ret < 0)
-			return ret;
-
-		val->intval = data * 625 / 8;
+			val->intval = 0;
+		else
+			val->intval = data * 625 / 8;
 		break;
 	case POWER_SUPPLY_PROP_VOLTAGE_AVG:
 		ret = regmap_read(map, MAX17042_AvgVCELL, &data);
 		if (ret < 0)
-			return ret;
-
-		val->intval = data * 625 / 8;
+			val->intval = 0;
+		else
+			val->intval = data * 625 / 8;
 		break;
 	case POWER_SUPPLY_PROP_VOLTAGE_OCV:
 		ret = regmap_read(map, MAX17042_OCVInternal, &data);
 		if (ret < 0)
-			return ret;
-
-		val->intval = data * 625 / 8;
+			val->intval = 0;
+		else
+			val->intval = data * 625 / 8;
 		break;
 	case POWER_SUPPLY_PROP_CAPACITY:
 		ret = regmap_read(map, MAX17042_RepSOC, &data);
 		if (ret < 0)
-			return ret;
-
-		val->intval = data >> 8;
+			val->intval = 0;
+		else
+			val->intval = data >> 8;
 		break;
 	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
 		ret = regmap_read(map, MAX17042_DesignCap, &data);
 		if (ret < 0)
-			return ret;
-
-		data64 = data * 5000000ll;
-		do_div(data64, chip->pdata->r_sns);
-		val->intval = data64;
+			val->intval = 0;
+		else {
+			data64 = data * 5000000ll;
+			do_div(data64, chip->pdata->r_sns);
+			val->intval = data64;
+		}
 		break;
 	case POWER_SUPPLY_PROP_CHARGE_FULL:
 		ret = regmap_read(map, MAX17042_FullCAP, &data);
 		if (ret < 0)
-			return ret;
-
-		data64 = data * 5000000ll;
-		do_div(data64, chip->pdata->r_sns);
-		val->intval = data64;
+			val->intval = 0;
+		else {
+			data64 = data * 5000000ll;
+			do_div(data64, chip->pdata->r_sns);
+			val->intval = data64;
+		}
 		break;
 	case POWER_SUPPLY_PROP_CHARGE_NOW:
 		ret = regmap_read(map, MAX17042_RepCap, &data);
 		if (ret < 0)
-			return ret;
-
-		data64 = data * 5000000ll;
-		do_div(data64, chip->pdata->r_sns);
-		val->intval = data64;
+			val->intval = 0;
+		else {
+			data64 = data * 5000000ll;
+			do_div(data64, chip->pdata->r_sns);
+			val->intval = data64;
+		}
 		break;
 	case POWER_SUPPLY_PROP_CHARGE_COUNTER:
 		ret = regmap_read(map, MAX17042_QH, &data);
 		if (ret < 0)
-			return ret;
-
-		val->intval = data * 1000 / 2;
+			val->intval = 0;
+		else
+			val->intval = data * 1000 / 2;
 		break;
 	case POWER_SUPPLY_PROP_TEMP:
 		ret = max17042_get_temperature(chip, &val->intval);
-		if (ret < 0)
-			return ret;
 		break;
 	case POWER_SUPPLY_PROP_TEMP_ALERT_MIN:
 		ret = regmap_read(map, MAX17042_TALRT_Th, &data);
 		if (ret < 0)
-			return ret;
-		/* LSB is Alert Minimum. In deci-centigrade */
-		val->intval = sign_extend32(data & 0xff, 7) * 10;
+			val->intval = 0;
+		else {
+			/* LSB is Alert Minimum. In deci-centigrade */
+			val->intval = sign_extend32(data & 0xff, 7) * 10;
+		}
 		break;
 	case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
 		ret = regmap_read(map, MAX17042_TALRT_Th, &data);
 		if (ret < 0)
-			return ret;
-		/* MSB is Alert Maximum. In deci-centigrade */
-		val->intval = sign_extend32(data >> 8, 7) * 10;
+			val->intval = 0;
+		else {
+			/* MSB is Alert Maximum. In deci-centigrade */
+			val->intval = sign_extend32(data >> 8, 7) * 10;
+		}
 		break;
 	case POWER_SUPPLY_PROP_TEMP_MIN:
 		val->intval = chip->pdata->temp_min;
@@ -372,8 +374,6 @@ static int max17042_get_property(struct power_supply *psy,
 		break;
 	case POWER_SUPPLY_PROP_HEALTH:
 		ret = max17042_get_battery_health(chip, &val->intval);
-		if (ret < 0)
-			return ret;
 		break;
 	case POWER_SUPPLY_PROP_SCOPE:
 		val->intval = POWER_SUPPLY_SCOPE_SYSTEM;
@@ -1048,6 +1048,12 @@ static int max17042_probe(struct i2c_client *client,
 		regmap_write(chip->regmap, MAX17042_CGAIN, 0x0000);
 		regmap_write(chip->regmap, MAX17042_MiscCFG, 0x0003);
 		regmap_write(chip->regmap, MAX17042_LearnCFG, 0x0007);
+	}
+
+	ret = regmap_read(chip->regmap, MAX17042_STATUS, &val);
+	if (ret < 0) {
+		dev_err(&client->dev, "max17042 not present or inactive\n");
+		return -EINVAL;
 	}
 
 	chip->battery = devm_power_supply_register(&client->dev, max17042_desc,
