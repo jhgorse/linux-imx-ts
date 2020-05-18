@@ -851,6 +851,56 @@ static irqreturn_t max17042_thread_handler(int id, void *dev)
 	return IRQ_HANDLED;
 }
 
+
+/**
+ * Initialization from the sequence in
+ * https://pdfserv.maximintegrated.com/en/an/MAX17055-software-implementation-guide.pdf
+ */
+static void max17055_write_ezconfig(struct max17042_chip *chip) {
+	u32 hibcfg;
+	u32 modelcfg;
+	u32 status;
+
+	u32 designCap = 0x0fa0;
+	u32 ichgTerm = 0x0640;
+	u32 vempty = 0x9650;
+	u32 dQAcc = designCap / 32;
+
+	dev_info(&chip->client->dev, "Writing fixed MAX17055 configuration to chip\n");
+
+	/* register 0x60 isn't named in the implementation guide, unfortunate */
+	regmap_read(chip->regmap, MAX17055_HibCfg, &hibcfg);
+	regmap_write(chip->regmap, 0x60, 0x90);
+	regmap_write(chip->regmap, MAX17055_HibCfg, 0x00);
+	regmap_write(chip->regmap, 0x60, 0x00);
+
+	regmap_write(chip->regmap, MAX17042_DesignCap, designCap);
+	regmap_write(chip->regmap, MAX17042_dQacc, dQAcc);
+	regmap_write(chip->regmap, MAX17042_ICHGTerm, ichgTerm);
+	/* for the 17055 the v_empty register is in a different location from the 17042 */
+	regmap_write(chip->regmap, MAX17055_V_empty, vempty);
+
+#if 0
+	/* Charge voltage > 4.275 */
+	regmap_write(chip->regmap, MAX17042_dPacc, dQAcc * 51200 / designCap);
+	regmap_write(chip->regmap, MAX17055_ModelCfg, 0x8400);
+#else
+	regmap_write(chip->regmap, MAX17042_dPacc, dQAcc * 44138 / designCap);
+	regmap_write(chip->regmap, MAX17055_ModelCfg, 0x8000);
+#endif
+
+	do {
+		regmap_read(chip->regmap, MAX17055_ModelCfg, &modelcfg);
+		mdelay(10);
+	} while (modelcfg & 0x8000);
+
+	regmap_write(chip->regmap, MAX17055_HibCfg, hibcfg);
+
+	regmap_read(chip->regmap, MAX17042_STATUS, &status);
+	status &= ~STATUS_POR_BIT;
+	max17042_write_verify_reg(chip->regmap, MAX17042_STATUS, status);
+}
+
 static void max17042_init_worker(struct work_struct *work)
 {
 	struct max17042_chip *chip = container_of(work,
@@ -863,6 +913,9 @@ static void max17042_init_worker(struct work_struct *work)
 		if (ret)
 			return;
 	}
+
+	/* Use EZ config in max17055 software implementation guide */
+	max17055_write_ezconfig(chip);
 
 	chip->init_complete = 1;
 }
