@@ -106,6 +106,7 @@
 			gpios = <&gpio3 25 GPIO_ACTIVE_LOW>;
 		};
 
+// Control with gpiod
 //		USB1_TRIGn {
 //			gpios = <&gpio5 28 GPIO_ACTIVE_LOW>;
 //		};
@@ -121,10 +122,10 @@
 		#size-cells = <2>;
 		ranges;
 
-		m4_reserved_tcm: m4@7e0000 {
-			no-map;
-			reg = <0 0x7e0000 0 0x40000>;
-		};
+//		m4_reserved_tcm: m4@7e0000 {
+//			no-map;
+//			reg = <0 0x7e0000 0 0x40000>;
+//		};
 
 		m4_reserved_data2: m4@0xBF000000 {
 			no-map;
@@ -343,6 +344,7 @@
 		status = "okay";
 	};
 
+// Control with /dev/i2c as the driver doesn't support reg settings 
 /*	vcnl4200_2: vcnl4200_2@51 {
 		compatible = "vishay,vcnl4200";
 		reg = <0x51>;
@@ -361,6 +363,7 @@
 };
 
 &i2c3 {
+// Control with /dev/i2c as the driver doesn't support reg settings 
 /*	vcnl4200_3: vcnl4200_3@51 {
 		compatible = "vishay,vcnl4200";
 		reg = <0x51>;
@@ -406,6 +409,17 @@
 
 &uart2 {
 	status = "disabled";  /* Reserve for M4 */
+};
+
+&rpmsg{
+	/*
+	 * 64K for one rpmsg instance:
+	 * --0x40000000~0x4000ffff: pingpong
+	 */
+	vdev-nums = <1>;
+//djk	reg = <0x0 0x40000000 0x0 0x10000>;
+	reg = <0x0 0xb8000000 0x0 0x10000>;
+	status = "okay";
 };
 
 &pwm3 {
