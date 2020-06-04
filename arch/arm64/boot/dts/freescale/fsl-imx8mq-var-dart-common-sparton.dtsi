@@ -333,6 +333,12 @@
 &i2c2 {
 	/delete-node/ rtc@0x68;		/* address conflict with m41t62 */
 
+      	w1: ds2482@18 {
+                compatible = "dallas,ds2482";
+                reg = <0x18>;
+		status = "okay";
+        };
+
 	maxtouch: maxtouch@4a {
 		compatible = "atmel,maxtouch";
 		pinctrl-names = "default";
