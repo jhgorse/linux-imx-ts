@@ -862,7 +862,7 @@ static void max17055_write_ezconfig(struct max17042_chip *chip) {
 	u32 status;
 
 	u32 designCap = 0x1f40;
-	u32 ichgTerm = 0x0640;
+	u32 ichgTerm = 0x019A;
 	u32 vempty = 0x9650;
 	u32 dQAcc = designCap / 32;
 
