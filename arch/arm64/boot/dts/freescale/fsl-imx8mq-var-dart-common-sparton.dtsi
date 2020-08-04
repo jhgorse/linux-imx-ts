@@ -660,6 +660,7 @@
 &usb_dwc3_0 {
 	extcon = <>;	/* no typec@3d */
 	dr_mode = "host";
+};
 
 &mipi_csi_1 {
 	status = "disabled";
@@ -689,4 +690,3 @@
 	status = "disabled";
 };
 
-};
