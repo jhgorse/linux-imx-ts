@@ -86,13 +86,13 @@
 			gpios = <&gpio3 10 GPIO_ACTIVE_LOW>;
 		};
 
-		GPIO314 {
-			gpios = <&gpio3 14 GPIO_ACTIVE_LOW>;
-		};
+//		GPIO314 {
+//			gpios = <&gpio3 14 GPIO_ACTIVE_LOW>;
+//		};
 
-		GPIO315 {
-			gpios = <&gpio3 15 GPIO_ACTIVE_LOW>;
-		};
+//		GPIO315 {
+//			gpios = <&gpio3 15 GPIO_ACTIVE_LOW>;
+//		};
 
 		GPIO322 {
 			gpios = <&gpio3 22 GPIO_ACTIVE_LOW>;
@@ -102,9 +102,9 @@
 			gpios = <&gpio3 24 GPIO_ACTIVE_LOW>;
 		};
 
-		GPIO325 {
-			gpios = <&gpio3 25 GPIO_ACTIVE_LOW>;
-		};
+//		GPIO325 {
+//			gpios = <&gpio3 25 GPIO_ACTIVE_LOW>;
+//		};
 
 // Control with gpiod
 //		USB1_TRIGn {

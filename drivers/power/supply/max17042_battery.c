@@ -913,9 +913,15 @@ static void max17042_init_worker(struct work_struct *work)
 		if (ret)
 			return;
 	}
+	else
+	{
+		pr_info("djk: max17042 no platform data\n");
+	}
 
 	/* Use EZ config in max17055 software implementation guide */
 	max17055_write_ezconfig(chip);
+
+// djk - 
 
 	chip->init_complete = 1;
 }
