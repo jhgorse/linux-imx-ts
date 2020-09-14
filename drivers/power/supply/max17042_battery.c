@@ -48,6 +48,10 @@
 #define STATUS_SMX_BIT         (1 << 14)
 #define STATUS_BR_BIT          (1 << 15)
 
+// djk CONFIG bits
+#define CONFIG_TSEL_BIT	 (1 << 15)
+#define CONFIG_ETHRM_BIT (1 << 4)
+
 /* Interrupt mask bits */
 #define CONFIG_ALRT_BIT_ENBL	(1 << 2)
 #define STATUS_INTR_SOCMIN_BIT	(1 << 10)
@@ -913,15 +917,14 @@ static void max17042_init_worker(struct work_struct *work)
 		if (ret)
 			return;
 	}
-	else
-	{
-		pr_info("djk: max17042 no platform data\n");
-	}
 
 	/* Use EZ config in max17055 software implementation guide */
 	max17055_write_ezconfig(chip);
 
 // djk - 
+	pr_info("djk: max17055 external thermistor\n");
+	regmap_update_bits(chip->regmap, MAX17042_CONFIG, CONFIG_ETHRM_BIT, 1);
+	regmap_update_bits(chip->regmap, MAX17042_CONFIG, CONFIG_TSEL_BIT, 1);
 
 	chip->init_complete = 1;
 }
