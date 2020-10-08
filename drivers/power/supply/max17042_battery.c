@@ -923,8 +923,8 @@ static void max17042_init_worker(struct work_struct *work)
 
 // djk - 
 	pr_info("djk: max17055 external thermistor\n");
-	regmap_update_bits(chip->regmap, MAX17042_CONFIG, CONFIG_ETHRM_BIT, 1);
-	regmap_update_bits(chip->regmap, MAX17042_CONFIG, CONFIG_TSEL_BIT, 1);
+	regmap_update_bits(chip->regmap, MAX17042_CONFIG, CONFIG_ETHRM_BIT, CONFIG_ETHRM_BIT);
+	regmap_update_bits(chip->regmap, MAX17042_CONFIG, CONFIG_TSEL_BIT, CONFIG_TSEL_BIT);
 
 	chip->init_complete = 1;
 }
