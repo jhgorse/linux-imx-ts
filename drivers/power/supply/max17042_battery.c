@@ -922,7 +922,7 @@ static void max17042_init_worker(struct work_struct *work)
 	max17055_write_ezconfig(chip);
 
 // djk - 
-	pr_info("djk: max17055 external thermistor\n");
+	pr_info("djk: max17055 etherm bit\n");
 	regmap_update_bits(chip->regmap, MAX17042_CONFIG, CONFIG_ETHRM_BIT, CONFIG_ETHRM_BIT);
 	regmap_update_bits(chip->regmap, MAX17042_CONFIG, CONFIG_TSEL_BIT, CONFIG_TSEL_BIT);
 
