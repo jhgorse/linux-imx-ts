@@ -155,7 +155,8 @@ dtb-$(CONFIG_ARCH_FSL_IMX8MQ) += fsl-imx8mq-ddr3l-arm2.dtb \
 				 fsl-imx8mq-var-dart-m4-sd-lvds-hdmi.dtb \
 				 fsl-imx8mq-var-dart-m4-sd-hdmi-cb12.dtb \
 				 fsl-imx8mq-var-dart-m4-sd-lvds-cb12.dtb \
-				 fsl-imx8mq-var-dart-m4-sd-lvds-hdmi-cb12.dtb
+				 fsl-imx8mq-var-dart-m4-sd-lvds-hdmi-cb12.dtb \
+				 fsl-imx8mq-var-dart-sd-emmc-sparton.dtb
 dtb-$(CONFIG_ARCH_FSL_IMX8MM) += fsl-imx8mm-evk.dtb \
 				 fsl-imx8mm-evk-ak4497.dtb \
 				 fsl-imx8mm-evk-m4.dtb \

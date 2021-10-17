@@ -60,11 +60,7 @@
 			linux,code = <KEY_F5>;
 		};
 
-// Control with gpiod
-//		GPIO308 {
-//			gpios = <&gpio3 8 GPIO_ACTIVE_LOW>;
-//			linux,code = <KEY_F6>;
-//		};
+
 
 		GPIO316 {
 			gpios = <&gpio3 16 GPIO_ACTIVE_LOW>;
@@ -86,14 +82,6 @@
 			gpios = <&gpio3 10 GPIO_ACTIVE_LOW>;
 		};
 
-//		GPIO314 {
-//			gpios = <&gpio3 14 GPIO_ACTIVE_LOW>;
-//		};
-
-//		GPIO315 {
-//			gpios = <&gpio3 15 GPIO_ACTIVE_LOW>;
-//		};
-
 		GPIO322 {
 			gpios = <&gpio3 22 GPIO_ACTIVE_LOW>;
 		};
@@ -102,18 +90,6 @@
 			gpios = <&gpio3 24 GPIO_ACTIVE_LOW>;
 		};
 
-//		GPIO325 {
-//			gpios = <&gpio3 25 GPIO_ACTIVE_LOW>;
-//		};
-
-// Control with gpiod
-//		USB1_TRIGn {
-//			gpios = <&gpio5 28 GPIO_ACTIVE_LOW>;
-//		};
-
-//		USB1_PWREN {
-//			gpios = <&gpio5 29 GPIO_ACTIVE_LOW>;
-//		};
 	};
 
 
@@ -482,36 +458,16 @@
 
 &mipi_dsi_phy {
 	status = "okay";
+
+	// jhg: TODO test without these
 	clock-names = "phy_ref";
 	clocks = <&clk IMX8MQ_CLK_DSI_PHY_REF>;
 };
 
-//&lcdif {
-//	status = "okay";
-//	max-res = <720>, <1280>;
-//
-//	assigned-clocks = <&clk IMX8MQ_CLK_LCDIF_PIXEL>,
-//			  <&clk IMX8MQ_VIDEO_PLL1_REF_SEL>,
-//			  <&clk IMX8MQ_VIDEO_PLL1>;
-//	assigned-clock-parents = <&clk IMX8MQ_VIDEO_PLL1_OUT>,
-//				 <&clk IMX8MQ_CLK_25M>;
-//	assigned-clock-rate = <69000000>,
-//			      <0>,
-//			      <599999999>;
-//
-//	port@0 {
-//		lcdif_mipi_dsi: mipi-dsi-endpoint {
-//			remote-endpoint = <&mipi_dsi_in>;
-//		};
-//	};
-//};
-
 &mipi_dsi {
 	status = "okay";
-//	as_bridge;
-//	sync-pol = <0>;
-//	pwr-delay = <10>;
 
+	// jhg: TODO test without these
 	assigned-clocks = <&clk IMX8MQ_CLK_DSI_PHY_REF>,
 			  <&clk IMX8MQ_CLK_DSI_CORE>;
 	assigned-clock-parents = <&clk IMX8MQ_VIDEO_PLL1_OUT>,
@@ -519,12 +475,6 @@
 	assigned-clock-rates = <27000000>,
 			       <266000000>;
 
-//	port@1 {
-//		mipi_dsi_in: endpoint {
-//			remote-endpoint = <&lcdif_mipi_dsi>;
-//		};
-//	};
-//
 	port@1 {
 		mipi_dsi_in: endpoint {
 			remote-endpoint = <&dcss_disp0_mipi_dsi>;
@@ -536,95 +486,63 @@
 &mipi_dsi_bridge {
 	status = "okay";
 
-//	clocks = <&clk IMX8MQ_CLK_DISP_APB_ROOT>,
-//		 <&clk IMX8MQ_CLK_DISP_AXI_ROOT>,
-//		 <&clk IMX8MQ_CLK_DISP_RTRM_ROOT>,
-//		 <&clk IMX8MQ_CLK_DC_PIXEL>,
-//		 <&clk IMX8MQ_CLK_DUMMY>,
-//		 <&clk IMX8MQ_CLK_DISP_DTRC>,
-//		 <&clk IMX8MQ_CLK_DSI_PHY_REF>,
-//		 <&clk IMX8MQ_CLK_DSI_AHB>,
-//		 <&clk IMX8MQ_CLK_DSI_IPG_DIV>,
-//		 <&clk IMX8MQ_CLK_DSI_CORE>;
-//	clock-names = "apb", "axi", "rtrm", "pix_div", "pix_out", "dtrc", "phy_ref", "rx_esc", "tx_esc", "core";
-//
-//	assigned-clocks = <&clk IMX8MQ_CLK_DC_PIXEL>,
-//			  <&clk IMX8MQ_CLK_DISP_AXI>,
-//			  <&clk IMX8MQ_CLK_DISP_RTRM>,
-//			  <&clk IMX8MQ_CLK_DSI_AHB>,
-//			  <&clk IMX8MQ_CLK_DSI_PHY_REF>,
-//			  <&clk IMX8MQ_CLK_DSI_CORE>,
-//			  <&clk IMX8MQ_VIDEO_PLL1_REF_SEL>,
-//			  <&clk IMX8MQ_VIDEO_PLL1>;
-//	assigned-clock-parents = <&clk IMX8MQ_VIDEO_PLL1_OUT>,
-//				 <&clk IMX8MQ_SYS1_PLL_800M>,
-//				 <&clk IMX8MQ_SYS1_PLL_800M>,
-//				 <&clk IMX8MQ_SYS1_PLL_80M>,
-//				 <&clk IMX8MQ_VIDEO_PLL1_OUT>,
-//				 <&clk IMX8MQ_SYS1_PLL_266M>,
-//				 <&clk IMX8MQ_CLK_25M>;
-//	assigned-clock-rates = <556000000>,
-//			       <800000000>,
-//			       <400000000>,
-//				   <80000000>,
-//				   <26155800>,
-//			       <266000000>,
-//			       <0>,
-//			       <556000000>;
-	src = <&src>;
-//	mux-sel = <&gpr>;
-
 	panel@0 {
-		compatible = "panel,simple";
+		compatible = "bananapi,lhr050h41", "ilitek,ili9881c";
 		reg = <0>;
 		pinctrl-0 = <&pinctrl_lcd>;
 		reset-gpio = <&gpio1 13 GPIO_ACTIVE_LOW>;
-		bus-format = "rgb888";
-		dsi-format = "rgb888";
+		timing-mode = <1>;
+		video-mode = <2>;	/* 0: burst mode
+							* 1: non-burst mode with sync event
+							* 2: non-burst mode with sync pulse
+							*/
+
+		// bus-format = "rgb888";
+		// dsi-format = "rgb888";
 		dsi-lanes = <4>;
-		delay-unprepare = <10>;
-		delay-prepare = <150>;
-		delay-enable = <150>;
-		delay-disable = <150>;
-		mipi-cmds = <&mipi_cmds_nt35521z>;
-		/*bridge-de-active = <1>;*/
-		/*bridge-sync-active = <1>;*/
-		mode-clock-non-contiguous; // jhg: try continous clock mode
-		/*mode-skip-eot;*/
-		mode-video;
-		/*mode-video-burst;*/ // jhg: non-burst with sync pulse
-		/*mode-video-hse;*/
-		mode-video-sync-pulse; // jhg: non-burst with sync pulse
-		/*mode-video-hfp-disable;*/
-		/*mode-video-hbp-disable;*/
-		/*mode-video-hsa-disable;*/
+		// delay-unprepare = <10>;
+		// delay-prepare = <150>;
+		// delay-enable = <150>;
+		// delay-disable = <150>;
+		// mipi-cmds = <&mipi_cmds_nt35521z>;
+		// /*bridge-de-active = <1>;*/
+		// /*bridge-sync-active = <1>;*/
+		// mode-clock-non-contiguous; // jhg: try continous clock mode
+		// /*mode-skip-eot;*/
+		// mode-video;
+		// /*mode-video-burst;*/ // jhg: non-burst with sync pulse
+		// /*mode-video-hse;*/
+		// mode-video-sync-pulse; // jhg: non-burst with sync pulse
+		// /*mode-video-hfp-disable;*/
+		// /*mode-video-hbp-disable;*/
+		// /*mode-video-hsa-disable;*/
 		panel-width-mm = <62>;
 		panel-height-mm = <110>;
-		bridge-de-active = <0>;
-		bridge-sync-active = <0>;
-		bits-per-pixel = <24>;
-		bits-per-color = <8>;
+		// bridge-de-active = <0>;
+		// bridge-sync-active = <0>;
+		// bits-per-pixel = <24>;
+		// bits-per-color = <8>;
 
-		display-timings {
-			timing {
-				clock-frequency = <75000000>;
-				hactive = <720>;
-				vactive = <1280>;
-				hfront-porch = <85>;
-				hback-porch = <75>;
-				hsync-len = <10>;
-				hsync-active = <0>;
-				vfront-porch = <16>;
-				vback-porch = <16>;
-				vsync-len = <6>;
-				vsync-active = <0>;
-				de-active = <0>;
-				pixelclk-active = <0>;
-			};
-		};
+		// display-timings {
+		// 	timing {
+		// 		clock-frequency = <75000000>;
+		// 		hactive = <720>;
+		// 		vactive = <1280>;
+		// 		hfront-porch = <85>;
+		// 		hback-porch = <75>;
+		// 		hsync-len = <10>;
+		// 		hsync-active = <0>;
+		// 		vfront-porch = <16>;
+		// 		vback-porch = <16>;
+		// 		vsync-len = <6>;
+		// 		vsync-active = <0>;
+		// 		de-active = <0>;
+		// 		pixelclk-active = <0>;
+		// 	};
+		// };
 
 		port {
-			panel0_in: endpoint {
+			panel1_in: endpoint {
 				remote-endpoint = <&mipi_dsi_bridge_out>;
 			};
 		};
@@ -634,7 +552,7 @@
 
 	port@1 {
 		mipi_dsi_bridge_out: endpoint {
-			remote-endpoint = <&panel0_in>;
+			remote-endpoint = <&panel1_in>;
 		};
 	};
 };
