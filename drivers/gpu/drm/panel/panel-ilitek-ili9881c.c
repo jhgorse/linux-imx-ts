@@ -50,6 +50,7 @@ struct ili9881c {
 	struct mipi_dsi_device	*dsi;
 	const struct ili9881c_desc	*desc;
 
+	struct backlight_device *backlight;
 	struct regulator	*power;
 	struct gpio_desc	*reset;
 };
