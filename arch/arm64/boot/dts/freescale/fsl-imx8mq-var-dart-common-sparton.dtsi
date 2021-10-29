@@ -14,9 +14,9 @@
 
 #include "dt-bindings/display/simple_panel_mipi_cmds.h"
 
-#define DCS_Short_Write_NP(x) DCS_S0P(x)
-#define DCS_Long_Write_3P(x)  DCS_L3P(x)
-#define DCS_Short_Write_1P(x) DCS_S1P(x)
+#define DCS_Short_Write_NP(x)      DCS_S0P(x)
+#define DCS_Long_Write_3P(x,y,z,a) DCS_L3P(x,y,z,a)
+#define DCS_Short_Write_1P(x,y)    DCS_S1P(x,y)
 
 / {
 	compatible = "variscite,imx8m-dart", "fsl,imx8mq";
@@ -124,213 +124,213 @@
 #if 1 // jhg
 		mipi-cmds-init = /bits/ 8 <
 			//========== Page 0 relative ==========
-			DCS_Long_Write_3P(0xff,0x98,0x81,0x03);
-			DCS_Short_Write_1P(0x01,0x00);
-			DCS_Short_Write_1P(0x02,0x00);
-			DCS_Short_Write_1P(0x03,0x72);
-			DCS_Short_Write_1P(0x04,0x00);
-			DCS_Short_Write_1P(0x05,0x00);
-			DCS_Short_Write_1P(0x06,0x09);
-			DCS_Short_Write_1P(0x07,0x00);
-			DCS_Short_Write_1P(0x08,0x00);
-			DCS_Short_Write_1P(0x09,0x01);
-			DCS_Short_Write_1P(0x0a,0x00);
-			DCS_Short_Write_1P(0x0b,0x00);
-			DCS_Short_Write_1P(0x0c,0x01);
-			DCS_Short_Write_1P(0x0d,0x00);
-			DCS_Short_Write_1P(0x0e,0x00);
-			DCS_Short_Write_1P(0x0f,0x00);
-			DCS_Short_Write_1P(0x10,0x00);
-			DCS_Short_Write_1P(0x11,0x00);
-			DCS_Short_Write_1P(0x12,0x00);
-			DCS_Short_Write_1P(0x13,0x00);
-			DCS_Short_Write_1P(0x14,0x00);
-			DCS_Short_Write_1P(0x15,0x00);
-			DCS_Short_Write_1P(0x16,0x00);
-			DCS_Short_Write_1P(0x17,0x00);
-			DCS_Short_Write_1P(0x18,0x00);
-			DCS_Short_Write_1P(0x19,0x00);
-			DCS_Short_Write_1P(0x1a,0x00);
-			DCS_Short_Write_1P(0x1b,0x00);
-			DCS_Short_Write_1P(0x1c,0x00);
-			DCS_Short_Write_1P(0x1d,0x00);
-			DCS_Short_Write_1P(0x1e,0x40);
-			DCS_Short_Write_1P(0x1f,0x80);
-			DCS_Short_Write_1P(0x20,0x05);
-			DCS_Short_Write_1P(0x21,0x02);
-			DCS_Short_Write_1P(0x22,0x00);
-			DCS_Short_Write_1P(0x23,0x00);
-			DCS_Short_Write_1P(0x24,0x00);
-			DCS_Short_Write_1P(0x25,0x00);
+			DCS_Long_Write_3P(0xff,0x98,0x81,0x03)
+			DCS_Short_Write_1P(0x01,0x00)
+			DCS_Short_Write_1P(0x02,0x00)
+			DCS_Short_Write_1P(0x03,0x72)
+			DCS_Short_Write_1P(0x04,0x00)
+			DCS_Short_Write_1P(0x05,0x00)
+			DCS_Short_Write_1P(0x06,0x09)
+			DCS_Short_Write_1P(0x07,0x00)
+			DCS_Short_Write_1P(0x08,0x00)
+			DCS_Short_Write_1P(0x09,0x01)
+			DCS_Short_Write_1P(0x0a,0x00)
+			DCS_Short_Write_1P(0x0b,0x00)
+			DCS_Short_Write_1P(0x0c,0x01)
+			DCS_Short_Write_1P(0x0d,0x00)
+			DCS_Short_Write_1P(0x0e,0x00)
+			DCS_Short_Write_1P(0x0f,0x00)
+			DCS_Short_Write_1P(0x10,0x00)
+			DCS_Short_Write_1P(0x11,0x00)
+			DCS_Short_Write_1P(0x12,0x00)
+			DCS_Short_Write_1P(0x13,0x00)
+			DCS_Short_Write_1P(0x14,0x00)
+			DCS_Short_Write_1P(0x15,0x00)
+			DCS_Short_Write_1P(0x16,0x00)
+			DCS_Short_Write_1P(0x17,0x00)
+			DCS_Short_Write_1P(0x18,0x00)
+			DCS_Short_Write_1P(0x19,0x00)
+			DCS_Short_Write_1P(0x1a,0x00)
+			DCS_Short_Write_1P(0x1b,0x00)
+			DCS_Short_Write_1P(0x1c,0x00)
+			DCS_Short_Write_1P(0x1d,0x00)
+			DCS_Short_Write_1P(0x1e,0x40)
+			DCS_Short_Write_1P(0x1f,0x80)
+			DCS_Short_Write_1P(0x20,0x05)
+			DCS_Short_Write_1P(0x21,0x02)
+			DCS_Short_Write_1P(0x22,0x00)
+			DCS_Short_Write_1P(0x23,0x00)
+			DCS_Short_Write_1P(0x24,0x00)
+			DCS_Short_Write_1P(0x25,0x00)
 
-			DCS_Short_Write_1P(0x26,0x00);
-			DCS_Short_Write_1P(0x27,0x00);
-			DCS_Short_Write_1P(0x28,0x33);
-			DCS_Short_Write_1P(0x29,0x02);
-			DCS_Short_Write_1P(0x2a,0x00);
-			DCS_Short_Write_1P(0x2b,0x00);
-			DCS_Short_Write_1P(0x2c,0x00);
-			DCS_Short_Write_1P(0x2d,0x00);
-			DCS_Short_Write_1P(0x2e,0x00);
-			DCS_Short_Write_1P(0x2f,0x00);
+			DCS_Short_Write_1P(0x26,0x00)
+			DCS_Short_Write_1P(0x27,0x00)
+			DCS_Short_Write_1P(0x28,0x33)
+			DCS_Short_Write_1P(0x29,0x02)
+			DCS_Short_Write_1P(0x2a,0x00)
+			DCS_Short_Write_1P(0x2b,0x00)
+			DCS_Short_Write_1P(0x2c,0x00)
+			DCS_Short_Write_1P(0x2d,0x00)
+			DCS_Short_Write_1P(0x2e,0x00)
+			DCS_Short_Write_1P(0x2f,0x00)
 
-			DCS_Short_Write_1P(0x30,0x00);
-			DCS_Short_Write_1P(0x31,0x00);
-			DCS_Short_Write_1P(0x32,0x00);
-			DCS_Short_Write_1P(0x33,0x00);
-			DCS_Short_Write_1P(0x34,0x04);
-			DCS_Short_Write_1P(0x35,0x00);
-			DCS_Short_Write_1P(0x36,0x00);
-			DCS_Short_Write_1P(0x37,0x00);
-			DCS_Short_Write_1P(0x38,0x3c);
-			DCS_Short_Write_1P(0x39,0x00);
-			DCS_Short_Write_1P(0x3a,0x40);
-			DCS_Short_Write_1P(0x3b,0x40);
-			DCS_Short_Write_1P(0x3c,0x00);
-			DCS_Short_Write_1P(0x3d,0x00);
-			DCS_Short_Write_1P(0x3e,0x00);
-			DCS_Short_Write_1P(0x3f,0x00);
+			DCS_Short_Write_1P(0x30,0x00)
+			DCS_Short_Write_1P(0x31,0x00)
+			DCS_Short_Write_1P(0x32,0x00)
+			DCS_Short_Write_1P(0x33,0x00)
+			DCS_Short_Write_1P(0x34,0x04)
+			DCS_Short_Write_1P(0x35,0x00)
+			DCS_Short_Write_1P(0x36,0x00)
+			DCS_Short_Write_1P(0x37,0x00)
+			DCS_Short_Write_1P(0x38,0x3c)
+			DCS_Short_Write_1P(0x39,0x00)
+			DCS_Short_Write_1P(0x3a,0x40)
+			DCS_Short_Write_1P(0x3b,0x40)
+			DCS_Short_Write_1P(0x3c,0x00)
+			DCS_Short_Write_1P(0x3d,0x00)
+			DCS_Short_Write_1P(0x3e,0x00)
+			DCS_Short_Write_1P(0x3f,0x00)
 
-			DCS_Short_Write_1P(0x40,0x00);
-			DCS_Short_Write_1P(0x41,0x00);
-			DCS_Short_Write_1P(0x42,0x00);
-			DCS_Short_Write_1P(0x43,0x00);
-			DCS_Short_Write_1P(0x44,0x00);
+			DCS_Short_Write_1P(0x40,0x00)
+			DCS_Short_Write_1P(0x41,0x00)
+			DCS_Short_Write_1P(0x42,0x00)
+			DCS_Short_Write_1P(0x43,0x00)
+			DCS_Short_Write_1P(0x44,0x00)
 
-			DCS_Short_Write_1P(0x50,0x01);
-			DCS_Short_Write_1P(0x51,0x23);
-			DCS_Short_Write_1P(0x52,0x45);
-			DCS_Short_Write_1P(0x53,0x67);
-			DCS_Short_Write_1P(0x54,0x89);
-			DCS_Short_Write_1P(0x55,0xab);
-			DCS_Short_Write_1P(0x56,0x01);
-			DCS_Short_Write_1P(0x57,0x23);
-			DCS_Short_Write_1P(0x58,0x45);
-			DCS_Short_Write_1P(0x59,0x67);
-			DCS_Short_Write_1P(0x5a,0x89);
-			DCS_Short_Write_1P(0x5b,0xab);
-			DCS_Short_Write_1P(0x5c,0xcd);
-			DCS_Short_Write_1P(0x5d,0xef);
-			DCS_Short_Write_1P(0x5e,0x11);
-			DCS_Short_Write_1P(0x5f,0x01);
+			DCS_Short_Write_1P(0x50,0x01)
+			DCS_Short_Write_1P(0x51,0x23)
+			DCS_Short_Write_1P(0x52,0x45)
+			DCS_Short_Write_1P(0x53,0x67)
+			DCS_Short_Write_1P(0x54,0x89)
+			DCS_Short_Write_1P(0x55,0xab)
+			DCS_Short_Write_1P(0x56,0x01)
+			DCS_Short_Write_1P(0x57,0x23)
+			DCS_Short_Write_1P(0x58,0x45)
+			DCS_Short_Write_1P(0x59,0x67)
+			DCS_Short_Write_1P(0x5a,0x89)
+			DCS_Short_Write_1P(0x5b,0xab)
+			DCS_Short_Write_1P(0x5c,0xcd)
+			DCS_Short_Write_1P(0x5d,0xef)
+			DCS_Short_Write_1P(0x5e,0x11)
+			DCS_Short_Write_1P(0x5f,0x01)
 
-			DCS_Short_Write_1P(0x60,0x00);
-			DCS_Short_Write_1P(0x61,0x15);
-			DCS_Short_Write_1P(0x62,0x14);
-			DCS_Short_Write_1P(0x63,0x0e);
-			DCS_Short_Write_1P(0x64,0x0f);
-			DCS_Short_Write_1P(0x65,0x0c);
-			DCS_Short_Write_1P(0x66,0x0d);
-			DCS_Short_Write_1P(0x67,0x06);
-			DCS_Short_Write_1P(0x68,0x02);
-			DCS_Short_Write_1P(0x69,0x07);
-			DCS_Short_Write_1P(0x6a,0x02);
-			DCS_Short_Write_1P(0x6b,0x02);
-			DCS_Short_Write_1P(0x6c,0x02);
-			DCS_Short_Write_1P(0x6d,0x02);
-			DCS_Short_Write_1P(0x6e,0x02);
-			DCS_Short_Write_1P(0x6f,0x02);
+			DCS_Short_Write_1P(0x60,0x00)
+			DCS_Short_Write_1P(0x61,0x15)
+			DCS_Short_Write_1P(0x62,0x14)
+			DCS_Short_Write_1P(0x63,0x0e)
+			DCS_Short_Write_1P(0x64,0x0f)
+			DCS_Short_Write_1P(0x65,0x0c)
+			DCS_Short_Write_1P(0x66,0x0d)
+			DCS_Short_Write_1P(0x67,0x06)
+			DCS_Short_Write_1P(0x68,0x02)
+			DCS_Short_Write_1P(0x69,0x07)
+			DCS_Short_Write_1P(0x6a,0x02)
+			DCS_Short_Write_1P(0x6b,0x02)
+			DCS_Short_Write_1P(0x6c,0x02)
+			DCS_Short_Write_1P(0x6d,0x02)
+			DCS_Short_Write_1P(0x6e,0x02)
+			DCS_Short_Write_1P(0x6f,0x02)
 
-			DCS_Short_Write_1P(0x70,0x02);
-			DCS_Short_Write_1P(0x71,0x02);
-			DCS_Short_Write_1P(0x72,0x02);
-			DCS_Short_Write_1P(0x73,0x02);
-			DCS_Short_Write_1P(0x74,0x02);
-			DCS_Short_Write_1P(0x75,0x01);
-			DCS_Short_Write_1P(0x76,0x00);
-			DCS_Short_Write_1P(0x77,0x14);
-			DCS_Short_Write_1P(0x78,0x15);
-			DCS_Short_Write_1P(0x79,0x0e);
-			DCS_Short_Write_1P(0x7a,0x0f);
-			DCS_Short_Write_1P(0x7b,0x0c);
-			DCS_Short_Write_1P(0x7c,0x0d);
-			DCS_Short_Write_1P(0x7d,0x06);
-			DCS_Short_Write_1P(0x7e,0x02);
-			DCS_Short_Write_1P(0x7f,0x07);
+			DCS_Short_Write_1P(0x70,0x02)
+			DCS_Short_Write_1P(0x71,0x02)
+			DCS_Short_Write_1P(0x72,0x02)
+			DCS_Short_Write_1P(0x73,0x02)
+			DCS_Short_Write_1P(0x74,0x02)
+			DCS_Short_Write_1P(0x75,0x01)
+			DCS_Short_Write_1P(0x76,0x00)
+			DCS_Short_Write_1P(0x77,0x14)
+			DCS_Short_Write_1P(0x78,0x15)
+			DCS_Short_Write_1P(0x79,0x0e)
+			DCS_Short_Write_1P(0x7a,0x0f)
+			DCS_Short_Write_1P(0x7b,0x0c)
+			DCS_Short_Write_1P(0x7c,0x0d)
+			DCS_Short_Write_1P(0x7d,0x06)
+			DCS_Short_Write_1P(0x7e,0x02)
+			DCS_Short_Write_1P(0x7f,0x07)
 			
-			DCS_Short_Write_1P(0x80,0x02);
-			DCS_Short_Write_1P(0x81,0x02);
-			DCS_Short_Write_1P(0x82,0x02);
-			DCS_Short_Write_1P(0x83,0x02);
-			DCS_Short_Write_1P(0x84,0x02);
+			DCS_Short_Write_1P(0x80,0x02)
+			DCS_Short_Write_1P(0x81,0x02)
+			DCS_Short_Write_1P(0x82,0x02)
+			DCS_Short_Write_1P(0x83,0x02)
+			DCS_Short_Write_1P(0x84,0x02)
 
-			DCS_Short_Write_1P(0x85,0x02);
-			DCS_Short_Write_1P(0x86,0x02);
-			DCS_Short_Write_1P(0x87,0x02);
-			DCS_Short_Write_1P(0x88,0x02);
-			DCS_Short_Write_1P(0x89,0x02);
-			DCS_Short_Write_1P(0x8a,0x02);
+			DCS_Short_Write_1P(0x85,0x02)
+			DCS_Short_Write_1P(0x86,0x02)
+			DCS_Short_Write_1P(0x87,0x02)
+			DCS_Short_Write_1P(0x88,0x02)
+			DCS_Short_Write_1P(0x89,0x02)
+			DCS_Short_Write_1P(0x8a,0x02)
 
-			DCS_Long_Write_3P(0xff,0x98,0x81,0x04);
-			DCS_Short_Write_1P(0x6c,0x15);
-			DCS_Short_Write_1P(0x6e,0x2a);
-			DCS_Short_Write_1P(0x6f,0x35);
+			DCS_Long_Write_3P(0xff,0x98,0x81,0x04)
+			DCS_Short_Write_1P(0x6c,0x15)
+			DCS_Short_Write_1P(0x6e,0x2a)
+			DCS_Short_Write_1P(0x6f,0x35)
 
-			DCS_Short_Write_1P(0x3a,0x94);
-			DCS_Short_Write_1P(0x8d,0x15);
-			DCS_Short_Write_1P(0x87,0xba);
-			DCS_Short_Write_1P(0x26,0x76);
-			DCS_Short_Write_1P(0xb2,0xd1);
-			DCS_Short_Write_1P(0xb5,0x06);
+			DCS_Short_Write_1P(0x3a,0x94)
+			DCS_Short_Write_1P(0x8d,0x15)
+			DCS_Short_Write_1P(0x87,0xba)
+			DCS_Short_Write_1P(0x26,0x76)
+			DCS_Short_Write_1P(0xb2,0xd1)
+			DCS_Short_Write_1P(0xb5,0x06)
 
-			DCS_Long_Write_3P(0xff,0x98,0x81,0x01);
-			DCS_Short_Write_1P(0x22,0x0a);
-			DCS_Short_Write_1P(0x31,0x00);
-			DCS_Short_Write_1P(0x53,0xa5);
-			DCS_Short_Write_1P(0x55,0xa5);
-			DCS_Short_Write_1P(0x50,0x9a);
-			DCS_Short_Write_1P(0x51,0x9a);
-			DCS_Short_Write_1P(0x60,0x22);
-			DCS_Short_Write_1P(0x61,0x00);
-			DCS_Short_Write_1P(0x62,0x19);
-			DCS_Short_Write_1P(0x63,0x10);
+			DCS_Long_Write_3P(0xff,0x98,0x81,0x01)
+			DCS_Short_Write_1P(0x22,0x0a)
+			DCS_Short_Write_1P(0x31,0x00)
+			DCS_Short_Write_1P(0x53,0xa5)
+			DCS_Short_Write_1P(0x55,0xa5)
+			DCS_Short_Write_1P(0x50,0x9a)
+			DCS_Short_Write_1P(0x51,0x9a)
+			DCS_Short_Write_1P(0x60,0x22)
+			DCS_Short_Write_1P(0x61,0x00)
+			DCS_Short_Write_1P(0x62,0x19)
+			DCS_Short_Write_1P(0x63,0x10)
 
-			DCS_Short_Write_1P(0xa0,0x08);
-			DCS_Short_Write_1P(0xa1,0x18);
-			DCS_Short_Write_1P(0xa2,0x1f);
-			DCS_Short_Write_1P(0xa3,0x0f);
-			DCS_Short_Write_1P(0xa4,0x14);
-			DCS_Short_Write_1P(0xa5,0x24);
-			DCS_Short_Write_1P(0xa6,0x1b);
-			DCS_Short_Write_1P(0xa7,0x1b);
-			DCS_Short_Write_1P(0xa8,0x5a);
-			DCS_Short_Write_1P(0xa9,0x1c);
-			DCS_Short_Write_1P(0xaa,0x29);
-			DCS_Short_Write_1P(0xab,0x4e);
-			DCS_Short_Write_1P(0xac,0x19);
-			DCS_Short_Write_1P(0xad,0x16);
-			DCS_Short_Write_1P(0xae,0x4c);
-			DCS_Short_Write_1P(0xaf,0x21);
+			DCS_Short_Write_1P(0xa0,0x08)
+			DCS_Short_Write_1P(0xa1,0x18)
+			DCS_Short_Write_1P(0xa2,0x1f)
+			DCS_Short_Write_1P(0xa3,0x0f)
+			DCS_Short_Write_1P(0xa4,0x14)
+			DCS_Short_Write_1P(0xa5,0x24)
+			DCS_Short_Write_1P(0xa6,0x1b)
+			DCS_Short_Write_1P(0xa7,0x1b)
+			DCS_Short_Write_1P(0xa8,0x5a)
+			DCS_Short_Write_1P(0xa9,0x1c)
+			DCS_Short_Write_1P(0xaa,0x29)
+			DCS_Short_Write_1P(0xab,0x4e)
+			DCS_Short_Write_1P(0xac,0x19)
+			DCS_Short_Write_1P(0xad,0x16)
+			DCS_Short_Write_1P(0xae,0x4c)
+			DCS_Short_Write_1P(0xaf,0x21)
 
-			DCS_Short_Write_1P(0xb0,0x2a);
-			DCS_Short_Write_1P(0xb1,0x48);
-			DCS_Short_Write_1P(0xb2,0x62);
-			DCS_Short_Write_1P(0xb3,0x39);
+			DCS_Short_Write_1P(0xb0,0x2a)
+			DCS_Short_Write_1P(0xb1,0x48)
+			DCS_Short_Write_1P(0xb2,0x62)
+			DCS_Short_Write_1P(0xb3,0x39)
 			
-			DCS_Short_Write_1P(0xc0,0x08);
-			DCS_Short_Write_1P(0xc1,0x0d);
-			DCS_Short_Write_1P(0xc2,0x18);
-			DCS_Short_Write_1P(0xc3,0x10);
-			DCS_Short_Write_1P(0xc4,0x0c);
-			DCS_Short_Write_1P(0xc5,0x1d);
-			DCS_Short_Write_1P(0xc6,0x10);
-			DCS_Short_Write_1P(0xc7,0x16);
-			DCS_Short_Write_1P(0xc8,0x61);
-			DCS_Short_Write_1P(0xc9,0x1b);
-			DCS_Short_Write_1P(0xca,0x27);
-			DCS_Short_Write_1P(0xcb,0x5e);
-			DCS_Short_Write_1P(0xcc,0x1c);
-			DCS_Short_Write_1P(0xcd,0x1b);
-			DCS_Short_Write_1P(0xce,0x4e);
-			DCS_Short_Write_1P(0xcf,0x22);
+			DCS_Short_Write_1P(0xc0,0x08)
+			DCS_Short_Write_1P(0xc1,0x0d)
+			DCS_Short_Write_1P(0xc2,0x18)
+			DCS_Short_Write_1P(0xc3,0x10)
+			DCS_Short_Write_1P(0xc4,0x0c)
+			DCS_Short_Write_1P(0xc5,0x1d)
+			DCS_Short_Write_1P(0xc6,0x10)
+			DCS_Short_Write_1P(0xc7,0x16)
+			DCS_Short_Write_1P(0xc8,0x61)
+			DCS_Short_Write_1P(0xc9,0x1b)
+			DCS_Short_Write_1P(0xca,0x27)
+			DCS_Short_Write_1P(0xcb,0x5e)
+			DCS_Short_Write_1P(0xcc,0x1c)
+			DCS_Short_Write_1P(0xcd,0x1b)
+			DCS_Short_Write_1P(0xce,0x4e)
+			DCS_Short_Write_1P(0xcf,0x22)
 
-			DCS_Short_Write_1P(0xd0,0x27);
-			DCS_Short_Write_1P(0xd1,0x52);
-			DCS_Short_Write_1P(0xd2,0x61);
-			DCS_Short_Write_1P(0xd3,0x39);
+			DCS_Short_Write_1P(0xd0,0x27)
+			DCS_Short_Write_1P(0xd1,0x52)
+			DCS_Short_Write_1P(0xd2,0x61)
+			DCS_Short_Write_1P(0xd3,0x39)
 
-			DCS_Long_Write_3P(0xff,0x98,0x81,0x00);
-			DCS_Short_Write_1P(0x35,0x00);
+			DCS_Long_Write_3P(0xff,0x98,0x81,0x00)
+			DCS_Short_Write_1P(0x35,0x00)
 
 
 		>;
@@ -350,9 +350,9 @@
 			// DCS_Short_Write_1P(0xEF,0x01);
 			// DCS_Long_Write_4P (0xEE,0x87,0x78,0x02,0x40);
 #else /* NT35521Z_SELF_TEST */
-			DCS_Short_Write_NP(0x11);
-			DELAY (120);
-			DCS_Short_Write_NP(0x29);
+			DCS_Short_Write_NP(0x11)
+			DELAY (120)
+			DCS_Short_Write_NP(0x29)
 #endif /* NT35521Z_SELF_TEST */
 		>;
 	};
@@ -617,59 +617,53 @@
 	status = "okay";
 
 	panel@0 {
-		compatible = "bananapi,lhr050h41", "ilitek,ili9881c";
+		compatible = "panel,simple";
 		reg = <0>;
 		pinctrl-0 = <&pinctrl_lcd>;
 		reset-gpio = <&gpio1 13 GPIO_ACTIVE_LOW>;
-		timing-mode = <1>;
-		video-mode = <2>;	/* 0: burst mode
-							* 1: non-burst mode with sync event
-							* 2: non-burst mode with sync pulse
-							*/
-
-		// bus-format = "rgb888";
-		// dsi-format = "rgb888";
+		bus-format = "rgb888";
+		dsi-format = "rgb888";
 		dsi-lanes = <4>;
-		// delay-unprepare = <10>;
-		// delay-prepare = <150>;
-		// delay-enable = <150>;
-		// delay-disable = <150>;
-		// mipi-cmds = <&mipi_cmds_nt35521z>;
-		// /*bridge-de-active = <1>;*/
-		// /*bridge-sync-active = <1>;*/
-		// mode-clock-non-contiguous; // jhg: try continous clock mode
-		// /*mode-skip-eot;*/
-		// mode-video;
-		// /*mode-video-burst;*/ // jhg: non-burst with sync pulse
-		// /*mode-video-hse;*/
-		// mode-video-sync-pulse; // jhg: non-burst with sync pulse
-		// /*mode-video-hfp-disable;*/
-		// /*mode-video-hbp-disable;*/
-		// /*mode-video-hsa-disable;*/
+		delay-unprepare = <10>;
+		delay-prepare = <150>;
+		delay-enable = <150>;
+		delay-disable = <150>;
+		mipi-cmds = <&mipi_cmds_nt35521z>;
+		/*bridge-de-active = <1>;*/
+		/*bridge-sync-active = <1>;*/
+		mode-clock-non-contiguous; // jhg: try continous clock mode
+		/*mode-skip-eot;*/
+		mode-video;
+		/*mode-video-burst;*/ // jhg: non-burst with sync pulse
+		/*mode-video-hse;*/
+		mode-video-sync-pulse; // jhg: non-burst with sync pulse
+		/*mode-video-hfp-disable;*/
+		/*mode-video-hbp-disable;*/
+		/*mode-video-hsa-disable;*/
 		panel-width-mm = <62>;
 		panel-height-mm = <110>;
-		// bridge-de-active = <0>;
-		// bridge-sync-active = <0>;
-		// bits-per-pixel = <24>;
-		// bits-per-color = <8>;
+		bridge-de-active = <0>;
+		bridge-sync-active = <0>;
+		bits-per-pixel = <24>;
+		bits-per-color = <8>;
 
-		// display-timings {
-		// 	timing {
-		// 		clock-frequency = <75000000>;
-		// 		hactive = <720>;
-		// 		vactive = <1280>;
-		// 		hfront-porch = <85>;
-		// 		hback-porch = <75>;
-		// 		hsync-len = <10>;
-		// 		hsync-active = <0>;
-		// 		vfront-porch = <16>;
-		// 		vback-porch = <16>;
-		// 		vsync-len = <6>;
-		// 		vsync-active = <0>;
-		// 		de-active = <0>;
-		// 		pixelclk-active = <0>;
-		// 	};
-		// };
+		display-timings {
+			timing {
+				clock-frequency = <75000000>;
+				hactive = <720>;
+				vactive = <1280>;
+				hfront-porch = <85>;
+				hback-porch = <75>;
+				hsync-len = <10>;
+				hsync-active = <0>;
+				vfront-porch = <16>;
+				vback-porch = <16>;
+				vsync-len = <6>;
+				vsync-active = <0>;
+				de-active = <0>;
+				pixelclk-active = <0>;
+			};
+		};
 
 		port {
 			panel1_in: endpoint {
