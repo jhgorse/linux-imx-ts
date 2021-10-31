@@ -327,8 +327,6 @@ static int ili9881c_prepare(struct drm_panel *panel)
 	gpiod_set_value(ctx->reset, 0);
 	msleep(20);
 
-	mipi_dsi_dcs_write_buffer(ctx->dsi, buf, sizeof(buf));
-
 	for (i = 0; i < ctx->desc->init_length; i++) {
 		const struct ili9881c_instr *instr = &ctx->desc->init[i];
 
