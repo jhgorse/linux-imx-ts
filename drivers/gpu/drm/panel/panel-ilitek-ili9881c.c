@@ -321,11 +321,22 @@ static int ili9881c_prepare(struct drm_panel *panel)
 	msleep(5);
 
 	/* And reset it */
-	gpiod_set_value(ctx->reset, 1);
-	msleep(20);
+	if (ctx->reset) {
+		// gjm: reset sequence specific to one panel; move to dts later
+		pr_info("gjm: panel-ilitek reset -> 0\n");
+		gpiod_set_value(ctx->reset, 1);
+		msleep(1);
+		pr_info("gjm: panel-ilitek reset -> 1\n");
+		gpiod_set_value(ctx->reset, 0);
+		msleep(84); // jhg: DEFAULT IDLE
+		gpiod_set_value(ctx->reset, 1);
+		msleep(23); // jhg: RESET
+		gpiod_set_value(ctx->reset, 0);
+		msleep(60); // jhg: delay to first lp mode command
+		pr_info("gjm: panel-ilitek ready to send commands\n");
+	}
 
-	gpiod_set_value(ctx->reset, 0);
-	msleep(20);
+	msleep(150);
 
 	for (i = 0; i < ctx->desc->init_length; i++) {
 		const struct ili9881c_instr *instr = &ctx->desc->init[i];
@@ -357,12 +368,31 @@ static int ili9881c_prepare(struct drm_panel *panel)
 
 static int ili9881c_enable(struct drm_panel *panel)
 {
+	struct mipi_dsi_device *dsi;
 	struct ili9881c *ctx = panel_to_ili9881c(panel);
+
+	dsi = ctx->dsi;
+
+	// jhg: send mipi_cms_enable
+	mipi_dsi_dcs_write_buffer(dsi, "\x11", 1);
+	msleep(20);
+	mipi_dsi_dcs_write_buffer(dsi, "\x29", 1);
+	msleep(20);
+
+	dsi->mode_flags |= MIPI_DSI_MODE_LPM;
+	mipi_dsi_turn_on_peripheral(dsi);
+	pr_info("jhg: turn on peripheral.\n");
+
+	// mipi_dsi_dcs_set_display_on(ctx->dsi);  // jhg
 
 	msleep(120);
 
-	mipi_dsi_dcs_set_display_on(ctx->dsi);
-	backlight_enable(ctx->backlight);
+	if (ctx->backlight) {
+		ctx->backlight->props.state &= ~BL_CORE_FBBLANK;
+		ctx->backlight->props.power = FB_BLANK_UNBLANK;
+		backlight_update_status(ctx->backlight);
+		// backlight_enable(ctx->backlight);
+	}
 
 	return 0;
 }
@@ -371,7 +401,14 @@ static int ili9881c_disable(struct drm_panel *panel)
 {
 	struct ili9881c *ctx = panel_to_ili9881c(panel);
 
-	backlight_disable(ctx->backlight);
+	if (ctx->backlight) {
+		ctx->backlight->props.power = FB_BLANK_POWERDOWN;
+		ctx->backlight->props.state |= BL_CORE_FBBLANK;
+		backlight_update_status(ctx->backlight);
+		// backlight_enable(ctx->backlight);
+	}
+	// backlight_disable(ctx->backlight);
+	msleep(150);
 	return mipi_dsi_dcs_set_display_off(ctx->dsi);
 }
 
@@ -379,6 +416,7 @@ static int ili9881c_unprepare(struct drm_panel *panel)
 {
 	struct ili9881c *ctx = panel_to_ili9881c(panel);
 
+	msleep(10);
 	mipi_dsi_dcs_enter_sleep_mode(ctx->dsi);
 	regulator_disable(ctx->power);
 	gpiod_set_value(ctx->reset, 1);
